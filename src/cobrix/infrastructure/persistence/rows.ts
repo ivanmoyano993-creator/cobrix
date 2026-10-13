@@ -32,6 +32,10 @@ export function oneOf<T extends string>(row: SqlRow, column: string, values: rea
 	return value
 }
 
+export function nullableOneOf<T extends string>(row: SqlRow, column: string, values: readonly T[]): T | null {
+	return row[column] === null ? null : oneOf(row, column, values)
+}
+
 export function listOf<T extends string>(row: SqlRow, column: string, values: readonly T[]): T[] {
 	return text(row, column)
 		.split(LIST_SEPARATOR)

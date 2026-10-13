@@ -15,6 +15,8 @@ export const PERSON_KIND = {
 
 export const DOCUMENT_TYPES = Object.values(DOCUMENT_TYPE)
 
+export const PERSON_KINDS = Object.values(PERSON_KIND)
+
 export const DOCUMENT_TYPE_VALUES: ReadonlySet<string> = new Set<string>(DOCUMENT_TYPES)
 
 export const LEGAL_DOCUMENT_TYPES: readonly DocumentType[] = [DOCUMENT_TYPE.Company, DOCUMENT_TYPE.Government]

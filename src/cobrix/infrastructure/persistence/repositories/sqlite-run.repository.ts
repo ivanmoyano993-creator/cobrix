@@ -2,9 +2,10 @@ import type { DatabaseSync } from 'node:sqlite'
 
 import { RUN_ITEM_OUTCOMES, RUN_KINDS, RUN_STATUS, RUN_STATUSES, RUN_TRIGGERS } from '../../../domain/constants/run.constants.ts'
 import type { RunRepository } from '../../../domain/interfaces/repositories.interface.ts'
-import type { NewRun, Run, RunItem, RunResult } from '../../../domain/interfaces/run.interface.ts'
+import type { NewRun, Run, RunItem, RunResult, RunSummary } from '../../../domain/interfaces/run.interface.ts'
 import type { RunCounters } from '../../../domain/types/run.types.ts'
 import { SQL_FALSE, SQL_TRUE } from '../../constants/sqlite.constants.ts'
+import type { SqlRow } from '../../types/sqlite.types.ts'
 import { flag, integer, nullableInteger, nullableText, oneOf, text } from '../rows.ts'
 
 export function createSqliteRunRepository(db: DatabaseSync): RunRepository {
@@ -39,9 +40,7 @@ function finishRun(db: DatabaseSync, runId: number, result: RunResult): void {
 	for (const [name, value] of Object.entries(result.counters)) insert.run(runId, name, value)
 }
 
-function getRun(db: DatabaseSync, runId: number): Run | null {
-	const row = db.prepare('SELECT * FROM runs WHERE id = ?').get(runId)
-	if (row === undefined) return null
+export function toRunSummary(row: SqlRow): RunSummary {
 	return {
 		id: integer(row, 'id'),
 		kind: oneOf(row, 'kind', RUN_KINDS),
@@ -52,9 +51,13 @@ function getRun(db: DatabaseSync, runId: number): Run | null {
 		finishedAt: nullableText(row, 'finished_at'),
 		summary: nullableText(row, 'summary'),
 		error: nullableText(row, 'error'),
-		counters: readCounters(db, runId),
-		items: readRunItems(db, runId),
 	}
+}
+
+function getRun(db: DatabaseSync, runId: number): Run | null {
+	const row = db.prepare('SELECT * FROM runs WHERE id = ?').get(runId)
+	if (row === undefined) return null
+	return { ...toRunSummary(row), counters: readCounters(db, runId), items: readRunItems(db, runId) }
 }
 
 function readCounters(db: DatabaseSync, runId: number): RunCounters {

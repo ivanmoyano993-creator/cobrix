@@ -3,6 +3,7 @@ import type { HistoryEvent, NewHistoryEvent } from './history.interface.ts'
 import type { ContractInfo, Holder } from './import.interface.ts'
 import type { Invoice, NewInvoice } from './invoice.interface.ts'
 import type { PayingInvoice } from './payment.interface.ts'
+import type { PanelQueries } from './queries.interface.ts'
 import type { NewRun, Run, RunItem, RunResult } from './run.interface.ts'
 import type { Settings } from './settings.interface.ts'
 
@@ -55,6 +56,7 @@ export interface Persistence {
 	readonly runs: RunRepository
 	readonly history: HistoryRepository
 	readonly schedule: ScheduleRepository
+	readonly queries: PanelQueries
 	readonly transactions: TransactionManager
 	close(): void
 }
