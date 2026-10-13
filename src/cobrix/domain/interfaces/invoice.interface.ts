@@ -15,6 +15,7 @@ export interface NewInvoice {
 export interface Invoice extends NewInvoice {
 	readonly id: number
 	readonly number: string
+	readonly customerName: string
 	readonly balanceCents: number
 	readonly status: InvoiceStatus
 	readonly paidAt: string | null

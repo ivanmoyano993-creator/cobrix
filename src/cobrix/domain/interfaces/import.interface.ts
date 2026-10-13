@@ -1,6 +1,6 @@
 import type { CONTRACT_KIND } from '../constants/import.constants.ts'
 import type { DocumentType, PersonKind } from '../types/document.types.ts'
-import type { ContractRejection, ContractStatus, InstallmentOutcome } from '../types/import.types.ts'
+import type { AcceptedInstallmentOutcome, ContractRejection, ContractStatus } from '../types/import.types.ts'
 
 export interface DebtLine {
 	readonly contractId: number
@@ -36,11 +36,20 @@ export interface ClassifyContractInput {
 
 export interface InstallmentVerdict {
 	readonly debtId: string
+	readonly period: string
+	readonly dueDate: string
+	readonly cutoffDate: string
+	readonly amountCents: number
+	readonly outcome: AcceptedInstallmentOutcome
+}
+
+export interface RejectedInstallment {
+	readonly debtId: string
 	readonly period: string | null
 	readonly dueDate: string | null
 	readonly cutoffDate: string | null
 	readonly amountCents: number | null
-	readonly outcome: InstallmentOutcome
+	readonly outcome: ContractRejection
 }
 
 export interface Holder {
@@ -79,7 +88,8 @@ export interface RejectedContract {
 	readonly contractId: number
 	readonly reason: ContractRejection
 	readonly detail: string
-	readonly installments: readonly InstallmentVerdict[]
+	readonly holderName: string | null
+	readonly installments: readonly RejectedInstallment[]
 }
 
 export interface ParsedInstallment {

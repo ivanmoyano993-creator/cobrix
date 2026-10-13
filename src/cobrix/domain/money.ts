@@ -1,4 +1,4 @@
-import { CENTS_PER_UNIT, CURRENCY } from './constants/money.constants.ts'
+import { CENTS_PER_UNIT, CURRENCY, MONEY_FORMAT } from './constants/money.constants.ts'
 
 export function toCents(value: number): number | null {
 	if (!Number.isFinite(value)) return null
@@ -6,5 +6,5 @@ export function toCents(value: number): number | null {
 }
 
 export function formatCents(cents: number): string {
-	return `${CURRENCY} ${(cents / CENTS_PER_UNIT).toFixed(2)}`
+	return `${CURRENCY} ${MONEY_FORMAT.format(cents / CENTS_PER_UNIT)}`
 }

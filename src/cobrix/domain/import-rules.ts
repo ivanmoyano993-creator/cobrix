@@ -19,13 +19,14 @@ import type {
 	InstallmentVerdict,
 	ParsedInstallment,
 	ReadLinesFailure,
+	RejectedInstallment,
 	RunCaps,
 } from './interfaces/import.interface.ts'
 import type {
+	AcceptedInstallmentOutcome,
 	ContractClassification,
 	ContractRejection,
 	ContractStatus,
-	InstallmentOutcome,
 	ReadLinesResult,
 } from './types/import.types.ts'
 import { toCents } from './money.ts'
@@ -37,6 +38,7 @@ export function classifyContract(input: ClassifyContractInput): ContractClassifi
 		contractId,
 		reason,
 		detail,
+		holderName: lines[0]?.holderName ?? null,
 		installments: lines.filter(line => line.debtId !== NO_DEBT_ID).map(line => describeRejected(line, rules.graceDays, reason)),
 	})
 
@@ -170,14 +172,14 @@ function installmentOutcomes(installments: readonly ParsedInstallment[], rules: 
 	})
 }
 
-function baseOutcome(item: ParsedInstallment, currentPeriod: string, windowStart: string | null): InstallmentOutcome {
+function baseOutcome(item: ParsedInstallment, currentPeriod: string, windowStart: string | null): AcceptedInstallmentOutcome {
 	if (item.amountCents === 0) return INSTALLMENT_OUTCOME.ResidualBalance
 	if (item.period > currentPeriod) return INSTALLMENT_OUTCOME.FutureInstallment
 	if (windowStart !== null && item.period < windowStart) return INSTALLMENT_OUTCOME.OutsideWindow
 	return INSTALLMENT_OUTCOME.Importable
 }
 
-function limitRecent(outcomes: readonly InstallmentOutcome[], limit: number): InstallmentOutcome[] {
+function limitRecent(outcomes: readonly AcceptedInstallmentOutcome[], limit: number): AcceptedInstallmentOutcome[] {
 	let kept = 0
 	return outcomes
 		.toReversed()
@@ -189,7 +191,7 @@ function limitRecent(outcomes: readonly InstallmentOutcome[], limit: number): In
 		.toReversed()
 }
 
-function describeRejected(line: DebtLine, graceDays: number, outcome: InstallmentOutcome): InstallmentVerdict {
+function describeRejected(line: DebtLine, graceDays: number, outcome: ContractRejection): RejectedInstallment {
 	const detail = parseDebtDetail(line.debtDetail)
 	return {
 		debtId: line.debtId,
