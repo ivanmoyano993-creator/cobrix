@@ -7,11 +7,12 @@ import type {
 	HistoryRepository,
 	InvoiceRepository,
 	RunRepository,
+	ScheduleRepository,
 	SettingsRepository,
 	TransactionManager,
 } from '../../domain/interfaces/repositories.interface.ts'
 import type { RunItem } from '../../domain/interfaces/run.interface.ts'
-import type { Settings } from '../../domain/interfaces/settings.interface.ts'
+import type { AutoRunSettings, Settings } from '../../domain/interfaces/settings.interface.ts'
 import type { ProviderError } from '../../domain/provider-error.ts'
 import type { PaymentVerdict } from '../../domain/types/payment.types.ts'
 import type { RunCounters, RunTrigger } from '../../domain/types/run.types.ts'
@@ -20,6 +21,20 @@ import type { CHECKED, FETCH_FAILED } from '../constants/run.constants.ts'
 export interface Clock {
 	now(): string
 	currentPeriod(): string
+	today(): string
+	localTime(): string
+}
+
+export interface RunGuard {
+	exclusive<T>(work: () => Promise<T>): Promise<T>
+	isBusy(): boolean
+}
+
+export interface IsDueInput {
+	readonly autoRun: AutoRunSettings
+	readonly today: string
+	readonly localTime: string
+	readonly lastRunDate: string | null
 }
 
 export interface RunRequest {
@@ -46,6 +61,11 @@ export interface UpdatePaidRunDeps extends RunDeps {
 	readonly invoices: InvoiceRepository
 	readonly history: HistoryRepository
 	readonly transactions: TransactionManager
+}
+
+export interface ScheduledRunDeps extends ImportRunDeps {
+	readonly schedule: ScheduleRepository
+	readonly guard: RunGuard
 }
 
 export interface RunContext {

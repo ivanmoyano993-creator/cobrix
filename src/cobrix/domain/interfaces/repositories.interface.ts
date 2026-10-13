@@ -38,6 +38,11 @@ export interface HistoryRepository {
 	listByCustomer(customerId: string): HistoryEvent[]
 }
 
+export interface ScheduleRepository {
+	lastRunDate(): string | null
+	markRun(date: string): void
+}
+
 export interface TransactionManager {
 	run<T>(mode: TransactionMode, work: () => T): T
 }
@@ -49,6 +54,7 @@ export interface Persistence {
 	readonly invoices: InvoiceRepository
 	readonly runs: RunRepository
 	readonly history: HistoryRepository
+	readonly schedule: ScheduleRepository
 	readonly transactions: TransactionManager
 	close(): void
 }

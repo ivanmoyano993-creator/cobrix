@@ -8,6 +8,7 @@ import { createSqliteCustomerRepository } from './repositories/sqlite-customer.r
 import { createSqliteHistoryRepository } from './repositories/sqlite-history.repository.ts'
 import { createSqliteInvoiceRepository } from './repositories/sqlite-invoice.repository.ts'
 import { createSqliteRunRepository } from './repositories/sqlite-run.repository.ts'
+import { createSqliteScheduleRepository } from './repositories/sqlite-schedule.repository.ts'
 import { createSqliteSettingsRepository } from './repositories/sqlite-settings.repository.ts'
 import { createSecretBox } from './secret-box.ts'
 import { createSqliteTransactionManager } from './sqlite-transaction-manager.ts'
@@ -23,6 +24,7 @@ export function createSqlitePersistence(options: SqlitePersistenceOptions): Pers
 		invoices: createSqliteInvoiceRepository(db),
 		runs: createSqliteRunRepository(db),
 		history: createSqliteHistoryRepository(db),
+		schedule: createSqliteScheduleRepository(db),
 		transactions: createSqliteTransactionManager(db),
 		close: () => db.close(),
 	}

@@ -18,9 +18,9 @@ import { DEFAULT_SETTINGS } from '../../src/cobrix/domain/constants/settings.con
 import type { Invoice } from '../../src/cobrix/domain/interfaces/invoice.interface.ts'
 import type { Persistence } from '../../src/cobrix/domain/interfaces/repositories.interface.ts'
 import type { Run } from '../../src/cobrix/domain/interfaces/run.interface.ts'
+import { createSystemClock } from '../../src/cobrix/infrastructure/clock/system-clock.ts'
 import { createHttpBillingProvider } from '../../src/cobrix/infrastructure/http/http-billing-provider.ts'
 import { createSqlitePersistence } from '../../src/cobrix/infrastructure/persistence/sqlite-persistence.ts'
-import { currentPeriod } from '../../src/shared/dates.ts'
 
 process.env.SANDBOX_TODAY = '2026-10-13'
 
@@ -61,7 +61,7 @@ describe('criterios de aceptación (ENUNCIADO §5) contra la API simulada', () =
 			...DEFAULT_SETTINGS,
 			provider: { baseUrl: `${apiBase}/api/v1`, username: SANDBOX_API_USER.user_name, password: SANDBOX_API_USER.password },
 		})
-		deps = { ...persistence, providerFor: config => createHttpBillingProvider(config), clock: { now: () => new Date().toISOString(), currentPeriod } }
+		deps = { ...persistence, providerFor: config => createHttpBillingProvider(config), clock: createSystemClock() }
 	})
 
 	after(async () => {

@@ -13,12 +13,14 @@ import { fileURLToPath } from 'node:url'
 
 process.env.SANDBOX_TODAY ??= '2026-10-13'
 
-const { DEFAULT_BILLING_API_DB, seedBillingApi } = await import('./billing-api/seed.ts')
+const { DEFAULT_BILLING_API_DB, SANDBOX_API_USER, seedBillingApi } = await import('./billing-api/seed.ts')
 const { createBillingApiServer } = await import('./billing-api/server.ts')
+const { createCobrix } = await import('./cobrix/bootstrap.ts')
 const { createApp } = await import('./web/app.ts')
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const billingApiDb = process.env.BILLING_API_DB ?? DEFAULT_BILLING_API_DB
+const cobrixDataDir = process.env.COBRIX_DATA_DIR ?? resolve(root, 'data')
 const appPort = Number(process.env.PORT ?? 4300)
 const billingApiPort = Number(process.env.BILLING_API_PORT ?? 4310)
 const host = process.env.HOST ?? '127.0.0.1'
@@ -28,6 +30,13 @@ if (!existsSync(billingApiDb)) seedBillingApi(billingApiDb)
 const billingApi = createBillingApiServer(billingApiDb)
 await billingApi.listen(billingApiPort, host)
 const simulatorUrl = `http://${host}:${billingApiPort}`
+
+const cobrix = createCobrix({
+	dataDir: cobrixDataDir,
+	secretKeyEnv: process.env.COBRIX_SECRET_KEY,
+	defaultProvider: { baseUrl: `${simulatorUrl}/api/v1`, username: SANDBOX_API_USER.user_name, password: SANDBOX_API_USER.password },
+})
+cobrix.startScheduler()
 
 const app = createApp({ simulatorUrl, assignmentPath: resolve(root, 'docs/ENUNCIADO.md') })
 app.listen(appPort, host)
@@ -39,6 +48,7 @@ console.log(`Fecha de la prueba:       ${process.env.SANDBOX_TODAY}`)
 
 const shutdown = (): void => {
 	app.close()
+	cobrix.close()
 	void billingApi.close().then(() => process.exit(0))
 }
 process.on('SIGINT', shutdown)

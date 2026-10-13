@@ -119,4 +119,11 @@ CREATE TABLE IF NOT EXISTS history (
 );
 
 CREATE INDEX IF NOT EXISTS history_by_customer ON history(customer_id);
+
+CREATE TABLE IF NOT EXISTS scheduler_state (
+	id INTEGER PRIMARY KEY CHECK (id = 1),
+	last_run_date TEXT NOT NULL
+);
 `
+
+export const SCHEDULER_STATE_ROW_ID = 1
