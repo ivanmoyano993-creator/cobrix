@@ -17,4 +17,4 @@ export const PLAN_PRICE_PATTERN = /^\d+(\.\d+)?$/
 
 export const NAIVE_UTC_DATETIME_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/
 
-export const TRAILING_SLASHES = /\/+$/
+export const URL_SEPARATOR = '/'

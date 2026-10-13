@@ -49,6 +49,11 @@ describe('createHttpBillingProvider (contra la API simulada)', () => {
 		assert.ok(ids.includes(900106), 'el contrato en cortesía también se lista')
 	})
 
+	it('tolera la URL configurada con barras al final', async () => {
+		const ids = await createHttpBillingProvider({ ...config, baseUrl: `${config.baseUrl}//` }).listContractIds()
+		assert.equal(ids.length, 27)
+	})
+
 	it('trae las cuotas pendientes de un contrato en el modelo del dominio', async () => {
 		const lines = await createHttpBillingProvider(config).getContractDebt(900101)
 		assert.deepEqual(lines.map(line => line.debtId).toSorted(), ['7000008', '7000009', '7000010'])
