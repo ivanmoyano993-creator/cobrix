@@ -1,20 +1,10 @@
-import type { DebtLine } from '../../domain/interfaces/import.interface.ts'
-import type { LedgerEntry } from '../../domain/interfaces/payment.interface.ts'
+import type { DebtLine } from './import.interface.ts'
+import type { LedgerEntry } from './payment.interface.ts'
 
 export interface ProviderConfig {
 	readonly baseUrl: string
 	readonly username: string
 	readonly password: string
-}
-
-export interface ProviderDeps {
-	readonly fetch?: typeof fetch
-	readonly now?: () => number
-}
-
-export interface Session {
-	readonly token: string
-	readonly expiresAt: number
 }
 
 export interface DateRange {

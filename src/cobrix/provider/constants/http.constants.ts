@@ -1,10 +1,3 @@
-export const PROVIDER_ERROR_KIND = {
-	Auth: 'auth',
-	Http: 'http',
-	Network: 'network',
-	Malformed: 'malformed',
-} as const
-
 export const API_PATH = {
 	Login: '/usuario/login',
 	ContractIds: '/isp/lista_ids_contratos',
