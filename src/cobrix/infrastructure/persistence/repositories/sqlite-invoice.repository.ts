@@ -58,7 +58,7 @@ function markInvoicePaid(db: DatabaseSync, invoiceId: number, paidBy: PayingInvo
 	`).run(INVOICE_STATUS.Paid, paidBy.date, paidBy.invoiceId, paidBy.invoiceNumber, invoiceId, INVOICE_STATUS.Open)
 }
 
-function toInvoice(row: SqlRow): Invoice {
+export function toInvoice(row: SqlRow): Invoice {
 	const id = integer(row, 'id')
 	return {
 		id,

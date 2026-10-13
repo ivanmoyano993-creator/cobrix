@@ -127,3 +127,31 @@ CREATE TABLE IF NOT EXISTS scheduler_state (
 `
 
 export const SCHEDULER_STATE_ROW_ID = 1
+
+export const LIKE_SPECIAL_CHARACTERS = /[\\%_]/g
+
+export const LIKE_ESCAPE = '\\'
+
+export const CUSTOMER_ROWS_SELECT = `
+	SELECT
+		customers.id,
+		customers.name,
+		customers.document_type,
+		customers.person_kind,
+		(SELECT COUNT(*) FROM contracts WHERE contracts.customer_id = customers.id) AS contracts,
+		COALESCE(SUM(CASE WHEN invoices.status = 'open' THEN 1 ELSE 0 END), 0) AS open_invoices,
+		COALESCE(SUM(CASE WHEN invoices.status = 'paid' THEN 1 ELSE 0 END), 0) AS paid_invoices,
+		COALESCE(SUM(CASE WHEN invoices.status = 'open' THEN invoices.balance_cents ELSE 0 END), 0) AS debt_cents,
+		MIN(CASE WHEN invoices.status = 'open' THEN invoices.due_date END) AS oldest_due_date
+	FROM customers
+	LEFT JOIN invoices ON invoices.customer_id = customers.id`
+
+export const CUSTOMER_ROWS_ORDER = 'GROUP BY customers.id ORDER BY debt_cents DESC, customers.name'
+
+export const OVERVIEW_SELECT = `
+	SELECT
+		(SELECT COUNT(*) FROM customers) AS customers,
+		(SELECT COUNT(*) FROM contracts) AS contracts,
+		(SELECT COUNT(*) FROM invoices WHERE status = 'open') AS open_invoices,
+		(SELECT COUNT(*) FROM invoices WHERE status = 'paid') AS paid_invoices,
+		(SELECT COALESCE(SUM(balance_cents), 0) FROM invoices WHERE status = 'open') AS receivable_cents`

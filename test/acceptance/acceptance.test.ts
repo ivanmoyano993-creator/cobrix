@@ -184,5 +184,16 @@ describe('criterios de aceptación (ENUNCIADO §5) contra la API simulada', () =
 			assert.equal(persistence.invoices.listOpen().length, 34)
 			assert.equal(totalCents(persistence.invoices.listOpen()), 95_500)
 		})
+
+		it('el panel muestra los mismos números: 20 clientes, 34 abiertas, 8 pagadas y USD 955,00 por cobrar', () => {
+			const overview = persistence.queries.overview()
+			assert.equal(overview.customers, 20)
+			assert.equal(overview.openInvoices, 34)
+			assert.equal(overview.paidInvoices, 8)
+			assert.equal(overview.receivableCents, 95_500)
+			assert.equal(persistence.queries.listCustomers('').length, 20)
+			const luis = persistence.queries.getCustomerFile('V9876543')
+			assert.equal(luis?.contracts.length, 2)
+		})
 	})
 })

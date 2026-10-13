@@ -3,6 +3,7 @@ import { DatabaseSync } from 'node:sqlite'
 import type { Persistence } from '../../domain/interfaces/repositories.interface.ts'
 import { SCHEMA_SQL } from '../constants/sqlite.constants.ts'
 import type { SqlitePersistenceOptions } from '../interfaces/persistence.interface.ts'
+import { createSqlitePanelQueries } from './queries/sqlite-panel.queries.ts'
 import { createSqliteContractRepository } from './repositories/sqlite-contract.repository.ts'
 import { createSqliteCustomerRepository } from './repositories/sqlite-customer.repository.ts'
 import { createSqliteHistoryRepository } from './repositories/sqlite-history.repository.ts'
@@ -25,6 +26,7 @@ export function createSqlitePersistence(options: SqlitePersistenceOptions): Pers
 		runs: createSqliteRunRepository(db),
 		history: createSqliteHistoryRepository(db),
 		schedule: createSqliteScheduleRepository(db),
+		queries: createSqlitePanelQueries(db),
 		transactions: createSqliteTransactionManager(db),
 		close: () => db.close(),
 	}

@@ -25,12 +25,15 @@ export interface RunResult {
 	readonly error: string | null
 }
 
-export interface Run extends NewRun {
+export interface RunSummary extends NewRun {
 	readonly id: number
 	readonly status: RunStatus
 	readonly finishedAt: string | null
 	readonly summary: string | null
-	readonly counters: RunCounters
 	readonly error: string | null
+}
+
+export interface Run extends RunSummary {
+	readonly counters: RunCounters
 	readonly items: readonly RunItem[]
 }
