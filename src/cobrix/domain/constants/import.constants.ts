@@ -38,7 +38,9 @@ export const INSTALLMENT_OUTCOME = {
 	...INSTALLMENT_EXCLUSION,
 } as const
 
-export const CONTRACT_STATUS_VALUES: ReadonlySet<string> = new Set<string>(Object.values(CONTRACT_STATUS))
+export const CONTRACT_STATUSES = Object.values(CONTRACT_STATUS)
+
+export const CONTRACT_STATUS_VALUES: ReadonlySet<string> = new Set<string>(CONTRACT_STATUSES)
 
 export const DEFAULT_IMPORT_RULES: ImportRules = {
 	importableStatuses: [CONTRACT_STATUS.Active, CONTRACT_STATUS.Cut],

@@ -1,6 +1,6 @@
-import { PROVIDER_ERROR_KIND } from '../domain/constants/provider.constants.ts'
-import type { BillingProvider, ProviderConfig } from '../domain/interfaces/provider.interface.ts'
-import { ProviderError } from '../domain/provider-error.ts'
+import { PROVIDER_ERROR_KIND } from '../../domain/constants/provider.constants.ts'
+import type { BillingProvider, ProviderConfig } from '../../domain/interfaces/provider.interface.ts'
+import { ProviderError } from '../../domain/provider-error.ts'
 import {
 	API_PATH,
 	HTTP_UNAUTHORIZED,
@@ -8,12 +8,12 @@ import {
 	REQUEST_TIMEOUT_MS,
 	TOKEN_RENEWAL_MARGIN_MS,
 	URL_SEPARATOR,
-} from './constants/http.constants.ts'
-import type { ProviderDeps, Session } from './interfaces/http.interface.ts'
+} from '../constants/http.constants.ts'
+import type { ProviderDeps, Session } from '../interfaces/http.interface.ts'
 import { parseJson } from './json.ts'
 import { parseApiErrorMessage, parseContractIds, parseDebtLines, parseLedger, parseSession } from './parsers.ts'
-import type { JsonValue } from './types/json.types.ts'
-import type { QueryParams } from './types/http.types.ts'
+import type { JsonValue } from '../types/json.types.ts'
+import type { QueryParams } from '../types/http.types.ts'
 
 export function createHttpBillingProvider(config: ProviderConfig, deps: ProviderDeps = {}): BillingProvider {
 	const fetchApi = deps.fetch ?? fetch

@@ -3,3 +3,5 @@ data/*.sqlite-wal
 data/*.sqlite-shm
 *.log
 .DS_Store
+data/cobrix.sqlite
+data/cobrix.key
