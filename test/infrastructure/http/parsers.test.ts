@@ -4,7 +4,7 @@ import { describe, it } from 'node:test'
 import { PROVIDER_ERROR_KIND } from '../../../src/cobrix/domain/constants/provider.constants.ts'
 import { ProviderError } from '../../../src/cobrix/domain/provider-error.ts'
 import { parseApiErrorMessage, parseContractIds, parseDebtLines, parseLedger, parseSession } from '../../../src/cobrix/infrastructure/http/parsers.ts'
-import type { JsonObject, JsonValue } from '../../../src/cobrix/infrastructure/http/types/json.types.ts'
+import type { JsonObject, JsonValue } from '../../../src/cobrix/infrastructure/types/json.types.ts'
 
 function debtRow(overrides: JsonObject = {}): JsonObject {
 	return {
