@@ -3,6 +3,7 @@ import type {
 	CONTRACT_KIND,
 	CONTRACT_REJECTION,
 	CONTRACT_STATUS,
+	INSTALLMENT_EXCLUSION,
 	INSTALLMENT_OUTCOME,
 } from '../constants/import.constants.ts'
 import type {
@@ -21,6 +22,10 @@ export type ContractKind = ValueOf<typeof CONTRACT_KIND>
 export type ContractRejection = ValueOf<typeof CONTRACT_REJECTION>
 
 export type InstallmentOutcome = ValueOf<typeof INSTALLMENT_OUTCOME>
+
+export type InstallmentExclusion = ValueOf<typeof INSTALLMENT_EXCLUSION>
+
+export type AcceptedInstallmentOutcome = typeof INSTALLMENT_OUTCOME.Importable | InstallmentExclusion
 
 export type ContractField = (typeof CONTRACT_FIELDS)[number]
 

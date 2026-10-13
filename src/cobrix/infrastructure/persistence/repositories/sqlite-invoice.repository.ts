@@ -5,8 +5,9 @@ import type { Invoice, NewInvoice } from '../../../domain/interfaces/invoice.int
 import type { PayingInvoice } from '../../../domain/interfaces/payment.interface.ts'
 import type { InvoiceRepository } from '../../../domain/interfaces/repositories.interface.ts'
 import { invoiceNumber } from '../../../domain/invoice.ts'
-import { integer, nullableInteger, nullableText, oneOf, text } from '../rows.ts'
+import { INVOICE_SELECT } from '../../constants/sqlite.constants.ts'
 import type { SqlRow } from '../../types/sqlite.types.ts'
+import { integer, nullableInteger, nullableText, oneOf, text } from '../rows.ts'
 
 export function createSqliteInvoiceRepository(db: DatabaseSync): InvoiceRepository {
 	return {
@@ -42,12 +43,12 @@ function insertInvoice(db: DatabaseSync, invoice: NewInvoice): Invoice {
 }
 
 function findInvoice(db: DatabaseSync, column: 'id' | 'external_id', value: number | string): Invoice | null {
-	const row = db.prepare(`SELECT * FROM invoices WHERE ${column} = ?`).get(value)
+	const row = db.prepare(`${INVOICE_SELECT} WHERE invoices.${column} = ?`).get(value)
 	return row === undefined ? null : toInvoice(row)
 }
 
 function listOpenInvoices(db: DatabaseSync): Invoice[] {
-	return db.prepare('SELECT * FROM invoices WHERE status = ? ORDER BY contract_id, period').all(INVOICE_STATUS.Open).map(toInvoice)
+	return db.prepare(`${INVOICE_SELECT} WHERE invoices.status = ? ORDER BY invoices.contract_id, invoices.period`).all(INVOICE_STATUS.Open).map(toInvoice)
 }
 
 function markInvoicePaid(db: DatabaseSync, invoiceId: number, paidBy: PayingInvoice): void {
@@ -62,6 +63,7 @@ function toInvoice(row: SqlRow): Invoice {
 	return {
 		id,
 		number: invoiceNumber(id),
+		customerName: text(row, 'customer_name'),
 		externalId: text(row, 'external_id'),
 		customerId: text(row, 'customer_id'),
 		contractId: integer(row, 'contract_id'),

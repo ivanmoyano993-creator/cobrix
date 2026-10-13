@@ -6,6 +6,8 @@ export const SQL_TRUE = 1
 
 export const SQL_FALSE = 0
 
+export const INVOICE_SELECT = 'SELECT invoices.*, customers.name AS customer_name FROM invoices JOIN customers ON customers.id = invoices.customer_id'
+
 export const SCHEMA_SQL = `
 PRAGMA foreign_keys = ON;
 PRAGMA journal_mode = WAL;
