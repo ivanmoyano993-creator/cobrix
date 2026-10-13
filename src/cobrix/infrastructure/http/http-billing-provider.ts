@@ -1,6 +1,6 @@
-import { PROVIDER_ERROR_KIND } from '../domain/constants/provider.constants.ts'
-import type { BillingProvider, ProviderConfig } from '../domain/interfaces/provider.interface.ts'
-import { ProviderError } from '../domain/provider-error.ts'
+import { PROVIDER_ERROR_KIND } from '../../domain/constants/provider.constants.ts'
+import type { BillingProvider, ProviderConfig } from '../../domain/interfaces/provider.interface.ts'
+import { ProviderError } from '../../domain/provider-error.ts'
 import {
 	API_PATH,
 	HTTP_UNAUTHORIZED,

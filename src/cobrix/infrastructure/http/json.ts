@@ -1,5 +1,5 @@
-import { PROVIDER_ERROR_KIND } from '../domain/constants/provider.constants.ts'
-import { ProviderError } from '../domain/provider-error.ts'
+import { PROVIDER_ERROR_KIND } from '../../domain/constants/provider.constants.ts'
+import { ProviderError } from '../../domain/provider-error.ts'
 import type { JsonObject, JsonValue } from './types/json.types.ts'
 
 export function isJsonObject(value: JsonValue | undefined): value is JsonObject {
