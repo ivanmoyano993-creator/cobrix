@@ -6,11 +6,11 @@ import { after, before, describe, it } from 'node:test'
 
 import { SANDBOX_API_USER, seedBillingApi } from '../../src/billing-api/seed.ts'
 import { createBillingApiServer, type BillingApiServer } from '../../src/billing-api/server.ts'
-import { PROVIDER_ERROR_KIND } from '../../src/cobrix/provider/constants/provider.constants.ts'
+import { PROVIDER_ERROR_KIND } from '../../src/cobrix/domain/constants/provider.constants.ts'
+import type { ProviderConfig } from '../../src/cobrix/domain/interfaces/provider.interface.ts'
+import { ProviderError } from '../../src/cobrix/domain/provider-error.ts'
+import type { ProviderErrorKind } from '../../src/cobrix/domain/types/provider.types.ts'
 import { createHttpBillingProvider } from '../../src/cobrix/provider/http-billing-provider.ts'
-import type { ProviderConfig } from '../../src/cobrix/provider/interfaces/provider.interface.ts'
-import { ProviderError } from '../../src/cobrix/provider/provider-error.ts'
-import type { ProviderErrorKind } from '../../src/cobrix/provider/types/provider.types.ts'
 
 process.env.SANDBOX_TODAY = '2026-10-13'
 
@@ -47,6 +47,11 @@ describe('createHttpBillingProvider (contra la API simulada)', () => {
 		const ids = await createHttpBillingProvider(config).listContractIds()
 		assert.equal(ids.length, 27)
 		assert.ok(ids.includes(900106), 'el contrato en cortesía también se lista')
+	})
+
+	it('tolera la URL configurada con barras al final', async () => {
+		const ids = await createHttpBillingProvider({ ...config, baseUrl: `${config.baseUrl}//` }).listContractIds()
+		assert.equal(ids.length, 27)
 	})
 
 	it('trae las cuotas pendientes de un contrato en el modelo del dominio', async () => {

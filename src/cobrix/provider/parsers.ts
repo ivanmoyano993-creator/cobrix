@@ -1,7 +1,7 @@
 import type { DebtLine } from '../domain/interfaces/import.interface.ts'
 import type { LedgerEntry } from '../domain/interfaces/payment.interface.ts'
-import { NAIVE_UTC_DATETIME_PATTERN, PLAN_PRICE_PATTERN } from './constants/provider.constants.ts'
-import type { Session } from './interfaces/provider.interface.ts'
+import { NAIVE_UTC_DATETIME_PATTERN, PLAN_PRICE_PATTERN } from './constants/http.constants.ts'
+import type { Session } from './interfaces/http.interface.ts'
 import {
 	asArray,
 	asObject,

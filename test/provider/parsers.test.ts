@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
-import { PROVIDER_ERROR_KIND } from '../../src/cobrix/provider/constants/provider.constants.ts'
+import { PROVIDER_ERROR_KIND } from '../../src/cobrix/domain/constants/provider.constants.ts'
+import { ProviderError } from '../../src/cobrix/domain/provider-error.ts'
 import { parseApiErrorMessage, parseContractIds, parseDebtLines, parseLedger, parseSession } from '../../src/cobrix/provider/parsers.ts'
-import { ProviderError } from '../../src/cobrix/provider/provider-error.ts'
 import type { JsonObject, JsonValue } from '../../src/cobrix/provider/types/json.types.ts'
 
 function debtRow(overrides: JsonObject = {}): JsonObject {
