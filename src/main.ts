@@ -38,7 +38,7 @@ const cobrix = createCobrix({
 })
 cobrix.startScheduler()
 
-const app = createApp({ simulatorUrl, assignmentPath: resolve(root, 'docs/ENUNCIADO.md') })
+const app = createApp({ cobrix, simulatorUrl, assignmentPath: resolve(root, 'docs/ENUNCIADO.md') })
 app.listen(appPort, host)
 
 console.log(`Panel (esqueleto):        http://${host}:${appPort}`)
