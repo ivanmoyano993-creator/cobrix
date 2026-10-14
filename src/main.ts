@@ -43,7 +43,7 @@ cobrix.startScheduler()
 const app = createApp({ cobrix, simulatorUrl, assignmentPath: resolve(root, 'docs/ENUNCIADO.md') })
 app.listen(appPort, host)
 
-console.log(`Panel (esqueleto):        http://${host}:${appPort}`)
+console.log(`Panel de Cobrix:          http://${host}:${appPort}`)
 console.log(`API del administrador:    ${simulatorUrl}/api/v1`)
 console.log(`Swagger:                  ${simulatorUrl}/docs`)
 console.log(`Fecha de la prueba:       ${process.env.SANDBOX_TODAY}`)
