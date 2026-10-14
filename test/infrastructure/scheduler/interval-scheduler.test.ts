@@ -17,6 +17,19 @@ describe('createSystemClock', () => {
 		assert.equal(clock.today(), '2026-10-13')
 		assert.equal(clock.currentPeriod(), '2026-10')
 	})
+
+	it('el día calendario cambia a medianoche de Caracas', () => {
+		assert.equal(createSystemClock(() => new Date('2026-10-14T03:59:00Z')).calendarDay(), '2026-10-13')
+		assert.equal(createSystemClock(() => new Date('2026-10-14T04:00:00Z')).calendarDay(), '2026-10-14')
+		assert.equal(createSystemClock(() => new Date('2026-10-13T02:30:00Z')).calendarDay(), '2026-10-12')
+	})
+
+	it('el día calendario ignora la fecha fijada del sandbox', () => {
+		process.env.SANDBOX_TODAY = '2026-10-13'
+		const clock = createSystemClock(() => new Date('2030-01-01T12:00:00Z'))
+		assert.equal(clock.today(), '2026-10-13')
+		assert.equal(clock.calendarDay(), '2030-01-01')
+	})
 })
 
 describe('createIntervalScheduler', () => {

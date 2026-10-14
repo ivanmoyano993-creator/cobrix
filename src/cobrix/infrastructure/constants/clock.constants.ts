@@ -7,4 +7,11 @@ export const LOCAL_TIME_FORMAT = new Intl.DateTimeFormat('en-GB', {
 	hourCycle: 'h23',
 })
 
+export const CALENDAR_DAY_FORMAT = new Intl.DateTimeFormat('en-CA', {
+	timeZone: LOCAL_TIME_ZONE,
+	year: 'numeric',
+	month: '2-digit',
+	day: '2-digit',
+})
+
 export const SCHEDULER_INTERVAL_MS = 60_000

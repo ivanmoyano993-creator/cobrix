@@ -24,7 +24,7 @@ Cómo levantarlo y probarlo: [`README.md`](../README.md).
 
 **Una corrida a la vez.** Un candado evita que una corrida manual y la automática se pisen.
 
-**Corrida automática:** «ya pasó la hora y todavía no corrió hoy», así se recupera si el servidor estaba apagado. La fecha de la última corrida se guarda con el mismo reloj con el que se compara; si no, el `SANDBOX_TODAY` fijo la dispararía cada minuto.
+**Corrida automática:** «ya pasó la hora y todavía no corrió hoy», así se recupera si el servidor estaba apagado. «Hoy» es el día real de Caracas (`calendarDay`), no el `SANDBOX_TODAY`: con la fecha fijada correría una sola vez para siempre. La última corrida se guarda con el mismo reloj con el que se compara.
 
 **Precarga del proveedor.** `npm start` completa el proveedor con el sandbox solo si nunca se configuró, para que se pueda importar de una. En producción arrancaría vacío.
 

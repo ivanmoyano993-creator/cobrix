@@ -24,6 +24,7 @@ export interface Clock {
 	now(): string
 	currentPeriod(): string
 	today(): string
+	calendarDay(): string
 	localTime(): string
 }
 

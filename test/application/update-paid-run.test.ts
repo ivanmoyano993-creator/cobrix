@@ -16,7 +16,7 @@ import { ProviderError } from '../../src/cobrix/domain/provider-error.ts'
 import { createFakeProvider, debtLine, type FakeProviderData, ledgerEntry } from '../support/fake-provider.ts'
 import { createTestPersistence, type TestPersistence } from '../support/test-persistence.ts'
 
-const CLOCK: Clock = { now: () => '2026-10-13T14:00:00.000Z', currentPeriod: () => '2026-10', today: () => '2026-10-13', localTime: () => '10:00' }
+const CLOCK: Clock = { now: () => '2026-10-13T14:00:00.000Z', currentPeriod: () => '2026-10', today: () => '2026-10-13', calendarDay: () => '2026-10-13', localTime: () => '10:00' }
 const MANUAL = { dryRun: false, trigger: RUN_TRIGGER.Manual }
 const DRY_RUN = { dryRun: true, trigger: RUN_TRIGGER.Manual }
 
