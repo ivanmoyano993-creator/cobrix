@@ -1,13 +1,17 @@
 import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 
+import { testConnection } from './application/connection.ts'
 import { runImport } from './application/import-run.ts'
+import { applySettingsInput, validateProviderInput } from './application/settings-form.ts'
 import type { ScheduledRunDeps } from './application/interfaces/run.interface.ts'
 import { createRunGuard } from './application/run-guard.ts'
 import { runScheduledIfDue } from './application/scheduled-run.ts'
 import { runUpdatePaid } from './application/update-paid-run.ts'
+import { DEFAULT_SETTINGS } from './domain/constants/settings.constants.ts'
 import type { ProviderConfig } from './domain/interfaces/provider.interface.ts'
 import type { Persistence } from './domain/interfaces/repositories.interface.ts'
+import type { Settings } from './domain/interfaces/settings.interface.ts'
 import { createSystemClock } from './infrastructure/clock/system-clock.ts'
 import { DATABASE_FILE, SCHEDULER_ERROR_PREFIX, SECRET_KEY_FILE } from './infrastructure/constants/bootstrap.constants.ts'
 import { SCHEDULER_INTERVAL_MS } from './infrastructure/constants/clock.constants.ts'
@@ -43,11 +47,30 @@ export function createCobrix(options: CobrixOptions): Cobrix {
 		runImport: request => guard.exclusive(() => runImport(deps, request)),
 		runUpdatePaid: request => guard.exclusive(() => runUpdatePaid(deps, request)),
 		isRunning: () => guard.isBusy(),
+		currentSettings: () => readableSettings(persistence),
+		updateSettings(input) {
+			const result = applySettingsInput(readableSettings(persistence), input)
+			if (result.ok) persistence.settings.save(result.settings)
+			return result
+		},
+		testConnection(input) {
+			const provider = validateProviderInput(readableSettings(persistence), input)
+			if (!provider.ok) return Promise.resolve(provider)
+			return testConnection(deps.providerFor(provider.provider))
+		},
 		startScheduler: () => scheduler.start(),
 		close() {
 			scheduler.stop()
 			persistence.close()
 		},
+	}
+}
+
+function readableSettings(persistence: Persistence): Settings {
+	try {
+		return persistence.settings.get()
+	} catch {
+		return DEFAULT_SETTINGS
 	}
 }
 

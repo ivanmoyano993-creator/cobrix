@@ -2,20 +2,7 @@ import { readFileSync } from 'node:fs'
 
 import { HTTP_STATUS, ROUTE } from '../constants/routes.constants.ts'
 import { html } from '../html.ts'
-import type { Page, ScreenPlaceholder } from '../interfaces/web.interface.ts'
-import { pill } from '../layout.ts'
-
-export function placeholderPage(screen: ScreenPlaceholder, active: string): Page {
-	return {
-		status: HTTP_STATUS.Ok,
-		title: screen.title,
-		active,
-		body: html`
-			<div class="head"><div><h1>${screen.title} ${pill('Por implementar', 'warn')}</h1><p>${screen.purpose}</p></div></div>
-			<section class="card"><header><h2>Qué debe hacer esta pantalla</h2><a href="${ROUTE.Assignment}">Enunciado §${screen.section}</a></header>
-				<div class="body"><ul class="todo">${screen.todo.map(item => html`<li>${item}</li>`)}</ul></div></section>`,
-	}
-}
+import type { Page } from '../interfaces/web.interface.ts'
 
 export function assignmentPage(path: string): Page {
 	return {
