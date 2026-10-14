@@ -83,6 +83,10 @@ export function ledgerEntry(contractId: number, fixture: LedgerFixture): LedgerE
 			paid: fixture.paid,
 			discount: 0,
 			balance: fixture.balance,
+			creditNote: 0,
+			additional: 0,
+			usage: 0,
+			nonUsage: 0,
 		},
 	}
 }

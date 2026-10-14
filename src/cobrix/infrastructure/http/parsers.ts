@@ -10,6 +10,7 @@ import {
 	readInteger,
 	readNumber,
 	readObject,
+	readOptionalNumber,
 	readString,
 	readStringList,
 } from './json.ts'
@@ -80,6 +81,10 @@ export function parseLedger(json: JsonValue): LedgerEntry[] {
 				paid: readNumber(detail, 'valor_pago', `${detailPath}.valor_pago`),
 				discount: readNumber(detail, 'descuento', `${detailPath}.descuento`),
 				balance: readNumber(detail, 'saldo_cuota', `${detailPath}.saldo_cuota`),
+				creditNote: readOptionalNumber(detail, 'valor_nota_credito', `${detailPath}.valor_nota_credito`),
+				additional: readOptionalNumber(detail, 'total_adicional', `${detailPath}.total_adicional`),
+				usage: readOptionalNumber(detail, 'valor_uso', `${detailPath}.valor_uso`),
+				nonUsage: readOptionalNumber(detail, 'valor_no_uso', `${detailPath}.valor_no_uso`),
 			},
 		}
 	})

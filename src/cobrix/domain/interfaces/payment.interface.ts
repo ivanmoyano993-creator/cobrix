@@ -6,6 +6,10 @@ export interface LedgerPayment {
 	readonly paid: number
 	readonly discount: number
 	readonly balance: number
+	readonly creditNote: number | null
+	readonly additional: number | null
+	readonly usage: number | null
+	readonly nonUsage: number | null
 }
 
 export interface LedgerEntry {
@@ -24,7 +28,14 @@ export interface ClassifyPaymentInput {
 	readonly pendingDebtCents: number | null
 }
 
-export interface LedgerState {
+export interface LedgerOptionalCents {
+	readonly creditNoteCents: number | null
+	readonly additionalCents: number | null
+	readonly usageCents: number | null
+	readonly nonUsageCents: number | null
+}
+
+export interface LedgerState extends LedgerOptionalCents {
 	readonly period: string
 	readonly feeCents: number
 	readonly paidCents: number

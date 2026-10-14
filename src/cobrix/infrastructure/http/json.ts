@@ -32,6 +32,11 @@ export function readNumber(source: JsonObject, key: string, path: string): numbe
 	return value
 }
 
+export function readOptionalNumber(source: JsonObject, key: string, path: string): number | null {
+	if (!Object.hasOwn(source, key) || source[key] === null) return null
+	return readNumber(source, key, path)
+}
+
 export function readInteger(source: JsonObject, key: string, path: string): number {
 	const value = readNumber(source, key, path)
 	if (!Number.isInteger(value)) throw malformed(path, 'un entero')
