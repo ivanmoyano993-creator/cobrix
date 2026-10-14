@@ -13,8 +13,10 @@ import {
 	OUTCOME_FILTER_PARAM,
 	ROUTE,
 	RUN_DETAIL_PATTERN,
+	SEARCH_PARAM,
+	URL_PARSE_BASE,
 } from './constants/routes.constants.ts'
-import { CUSTOMER_FILE_SCREEN, PENDING_SCREENS } from './constants/screens.constants.ts'
+import { PENDING_SCREENS } from './constants/screens.constants.ts'
 import { CSS } from './constants/styles.constants.ts'
 import { TONE } from './constants/ui.constants.ts'
 import { html } from './html.ts'
@@ -22,6 +24,8 @@ import { normalizePath, readFlash, readForm, redirect, send, sendHtml, withFlash
 import type { AppDeps, Flash, Page } from './interfaces/web.interface.ts'
 import { isRunItemOutcome } from './labels.ts'
 import { layout } from './layout.ts'
+import { customerFilePage } from './pages/customer-file.page.ts'
+import { customersPage } from './pages/customers.page.ts'
 import { assignmentPage, notFoundPage, placeholderPage } from './pages/placeholder.page.ts'
 import { runDetailPage } from './pages/run-detail.page.ts'
 import { summaryPage } from './pages/summary.page.ts'
@@ -37,7 +41,7 @@ export function createApp(deps: AppDeps): Server {
 }
 
 async function route(deps: AppDeps, req: IncomingMessage, res: ServerResponse): Promise<void> {
-	const url = new URL(req.url ?? ROUTE.Home, 'http://panel.local')
+	const url = new URL(req.url ?? ROUTE.Home, URL_PARSE_BASE)
 	const path = normalizePath(url.pathname)
 	if (req.method === 'POST') return handlePost(deps, req, res, path)
 	if (path === ROUTE.Stylesheet) return send(res, HTTP_STATUS.Ok, CSS, 'text/css; charset=utf-8')
@@ -48,11 +52,19 @@ function getPage(deps: AppDeps, path: string, url: URL): Page {
 	if (path === ROUTE.Home) return summaryPage(deps, deps.cobrix.persistence.settings.get())
 	if (path === ROUTE.Sync) return syncPage(deps)
 	if (path === ROUTE.Assignment) return assignmentPage(deps.assignmentPath)
+	if (path === ROUTE.Customers) return customersPage(deps, url.searchParams.get(SEARCH_PARAM) ?? '')
 	const runId = RUN_DETAIL_PATTERN.exec(path)?.[1]
 	if (runId !== undefined) return runPage(deps, Number(runId), url)
-	if (CUSTOMER_FILE_PATTERN.test(path)) return pendingPage(CUSTOMER_FILE_SCREEN, ROUTE.Customers)
+	const customerId = CUSTOMER_FILE_PATTERN.exec(path)?.[1]
+	if (customerId !== undefined) return customerPage(deps, decodeURIComponent(customerId))
 	if (PENDING_SCREENS[path]) return pendingPage(path, path)
 	return notFoundPage('No encontrado', ROUTE.Home, 'Resumen')
+}
+
+function customerPage(deps: AppDeps, customerId: string): Page {
+	const file = deps.cobrix.persistence.queries.getCustomerFile(customerId)
+	if (file === null) return notFoundPage('Ese cliente no existe', ROUTE.Customers, 'Clientes')
+	return customerFilePage(file)
 }
 
 function runPage(deps: AppDeps, runId: number, url: URL): Page {
