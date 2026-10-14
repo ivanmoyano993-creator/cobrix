@@ -12,7 +12,7 @@ export const EXCLUSION_DETAIL: Readonly<Record<InstallmentExclusion, string>> = 
 
 export const HELD_BY_CAP_DETAIL = 'Frenada por el tope de facturas o de monto por corrida: no se importó.'
 
-export const UNCHANGED_DETAIL = 'Sin pagos nuevos en el ISP: sigue abierta.'
+export const UNCHANGED_DETAIL = 'El ISP no registra pagos de esta cuota: su saldo es igual al de Cobrix. Sigue abierta.'
 
 export const EXEMPT_DETAIL = 'Cuota exonerada en el ISP (saldo 0 sin nada pagado): no es un pago, sigue abierta.'
 
