@@ -5,3 +5,5 @@ data/*.sqlite-shm
 .DS_Store
 data/cobrix.sqlite
 data/cobrix.key
+.env
+.atl/

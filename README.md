@@ -26,7 +26,11 @@ npm start
 
 ### Variables de entorno
 
-Todas son opcionales.
+Todas son opcionales. Para cambiar alguna, copia [`.env.example`](.env.example) a `.env` (ignorado por git) y descomenta lo que necesites: `npm start` lo carga con `--env-file-if-exists`, sin dependencias.
+
+```bash
+cp .env.example .env
+```
 
 | Variable | Por defecto | Para qué |
 | --- | --- | --- |
