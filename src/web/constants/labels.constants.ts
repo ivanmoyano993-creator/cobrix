@@ -2,7 +2,13 @@ import { REJECTED_CONTRACT_COUNTER_PREFIX, RUN_COUNTER } from '../../cobrix/appl
 import { CONTRACT_REJECTION, INSTALLMENT_EXCLUSION } from '../../cobrix/domain/constants/import.constants.ts'
 import { PAYMENT_OUTCOME } from '../../cobrix/domain/constants/payment.constants.ts'
 import { RUN_ITEM_OUTCOME, RUN_KIND, RUN_STATUS, RUN_TRIGGER } from '../../cobrix/domain/constants/run.constants.ts'
+import { PERSON_KIND } from '../../cobrix/domain/constants/document.constants.ts'
+import { HISTORY_EVENT } from '../../cobrix/domain/constants/history.constants.ts'
+import { INVOICE_STATUS } from '../../cobrix/domain/constants/invoice.constants.ts'
+import type { PersonKind } from '../../cobrix/domain/types/document.types.ts'
+import type { HistoryEventKind } from '../../cobrix/domain/types/history.types.ts'
 import type { ContractRejection } from '../../cobrix/domain/types/import.types.ts'
+import type { InvoiceStatus } from '../../cobrix/domain/types/invoice.types.ts'
 import type { RunItemOutcome, RunKind, RunStatus, RunTrigger } from '../../cobrix/domain/types/run.types.ts'
 import type { Badge } from '../interfaces/web.interface.ts'
 
@@ -143,6 +149,27 @@ export const COUNTER_ORDER: readonly string[] = [
 	RUN_COUNTER.ImportedAmountCents,
 	RUN_COUNTER.PaidAmountCents,
 ]
+
+export const PERSON_KIND_LABEL: Readonly<Record<PersonKind, string>> = {
+	[PERSON_KIND.Natural]: 'Natural',
+	[PERSON_KIND.Legal]: 'Jurídica',
+}
+
+export const PERSON_KIND_LONG_LABEL: Readonly<Record<PersonKind, string>> = {
+	[PERSON_KIND.Natural]: 'Persona natural',
+	[PERSON_KIND.Legal]: 'Persona jurídica',
+}
+
+export const INVOICE_STATUS_BADGE: Readonly<Record<InvoiceStatus, Badge>> = {
+	[INVOICE_STATUS.Open]: { label: 'Abierta', tone: 'warn' },
+	[INVOICE_STATUS.Paid]: { label: 'Pagada', tone: 'ok' },
+}
+
+export const HISTORY_EVENT_LABEL: Readonly<Record<HistoryEventKind, string>> = {
+	[HISTORY_EVENT.CustomerCreated]: 'Cliente creado',
+	[HISTORY_EVENT.InvoiceImported]: 'Factura importada',
+	[HISTORY_EVENT.InvoicePaid]: 'Pagada en el ISP',
+}
 
 export const COUNTERS_TITLE = 'Contadores'
 

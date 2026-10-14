@@ -12,7 +12,11 @@ export const ROUTE = {
 
 export const RUN_DETAIL_PATTERN = /^\/sincronizacion\/corridas\/(\d+)$/
 
-export const CUSTOMER_FILE_PATTERN = /^\/clientes\/[^/]+$/
+export const CUSTOMER_FILE_PATTERN = /^\/clientes\/([^/]+)$/
+
+export const SEARCH_PARAM = 'q'
+
+export const URL_PARSE_BASE = 'http://panel.local'
 
 export const DRY_RUN_FIELD = 'simular'
 

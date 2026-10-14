@@ -34,6 +34,10 @@ export const DATE_TIME_FORMAT = new Intl.DateTimeFormat('es-VE', { timeZone: 'Am
 
 export const EMPTY_VALUE = '—'
 
+export const MS_PER_DAY = 86_400_000
+
+export const DOCUMENT_TYPE_PATTERN = /^[VEJGP]\d/
+
 export const HTML_SPECIAL_CHARACTERS = /[&<>"']/g
 
 export const HTML_ESCAPES: Readonly<Record<string, string>> = {
