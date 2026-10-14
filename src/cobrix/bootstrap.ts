@@ -51,6 +51,7 @@ export function createCobrix(options: CobrixOptions): Cobrix {
 	return {
 		persistence,
 		progress,
+		clock: deps.clock,
 		runImport: request => guard.exclusive(() => runImport(deps, request)),
 		runUpdatePaid: request => guard.exclusive(() => runUpdatePaid(deps, request)),
 		startImport: request => startInBackground(guard, progress, () => runImport(deps, request)),

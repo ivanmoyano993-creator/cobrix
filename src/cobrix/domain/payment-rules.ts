@@ -1,5 +1,5 @@
 import { NO_COLLECTION_INVOICE_ID, PAYMENT_OUTCOME } from './constants/payment.constants.ts'
-import type { ClassifyPaymentInput, LedgerEntry, LedgerState } from './interfaces/payment.interface.ts'
+import type { ClassifyPaymentInput, LedgerEntry, LedgerOptionalCents, LedgerPayment, LedgerState } from './interfaces/payment.interface.ts'
 import type { PaymentVerdict } from './types/payment.types.ts'
 import { formatCents, toCents } from './money.ts'
 
@@ -10,14 +10,14 @@ export function classifyPayment(input: ClassifyPaymentInput): PaymentVerdict {
 		return compareBalance(input.pendingDebtCents, input.openBalanceCents)
 	}
 
-	const foreign = entries.find(entry => entry.payment.contractId !== input.contractId)
-	if (foreign) return inconsistent(`La cuota aparece en el contrato ${foreign.payment.contractId}.`)
+	const mismatch = contractMismatch(entries, input.contractId)
+	if (mismatch !== null) return inconsistent(mismatch)
 
 	const states = entries.map(stateOf).filter(state => state !== null)
 	if (states.length !== entries.length) return inconsistent('El libro trae montos que no son números.')
 	const [state] = states
 	if (state === undefined || states.some(other => !sameState(other, state))) return inconsistent('Las filas de la cuota no coinciden entre sí.')
-	if (state.balanceCents < 0 || state.paidCents < 0) return inconsistent('El libro trae un saldo o un pago negativo.')
+	if (hasNegative(state)) return inconsistent('El libro trae un monto negativo.')
 
 	if (state.balanceCents > 0) return compareBalance(state.balanceCents, input.openBalanceCents)
 	if (state.paidCents === 0) return { outcome: PAYMENT_OUTCOME.Exempt }
@@ -30,6 +30,14 @@ export function classifyPayment(input: ClassifyPaymentInput): PaymentVerdict {
 	}
 }
 
+function contractMismatch(entries: readonly LedgerEntry[], contractId: number): string | null {
+	const outer = entries.find(entry => entry.contractId !== contractId)
+	if (outer) return `El libro trae la cuota bajo el contrato ${outer.contractId}.`
+	const inner = entries.find(entry => entry.payment.contractId !== contractId)
+	if (inner) return `La cuota aparece en el contrato ${inner.payment.contractId}.`
+	return null
+}
+
 function stateOf(entry: LedgerEntry): LedgerState | null {
 	const { payment } = entry
 	const feeCents = toCents(payment.fee)
@@ -37,7 +45,30 @@ function stateOf(entry: LedgerEntry): LedgerState | null {
 	const discountCents = toCents(payment.discount)
 	const balanceCents = toCents(payment.balance)
 	if (feeCents === null || paidCents === null || discountCents === null || balanceCents === null) return null
-	return { period: payment.period, feeCents, paidCents, discountCents, balanceCents }
+	const extras = optionalCentsOf(payment)
+	if (extras === null) return null
+	return { period: payment.period, feeCents, paidCents, discountCents, balanceCents, ...extras }
+}
+
+function optionalCentsOf(payment: LedgerPayment): LedgerOptionalCents | null {
+	const values = [payment.creditNote, payment.additional, payment.usage, payment.nonUsage]
+	if (values.some(value => value !== null && !Number.isFinite(value))) return null
+	return {
+		creditNoteCents: optionalCents(payment.creditNote),
+		additionalCents: optionalCents(payment.additional),
+		usageCents: optionalCents(payment.usage),
+		nonUsageCents: optionalCents(payment.nonUsage),
+	}
+}
+
+function optionalCents(value: number | null): number | null {
+	if (value === null) return null
+	return toCents(value)
+}
+
+function hasNegative(state: LedgerState): boolean {
+	const amounts = [state.balanceCents, state.paidCents, state.creditNoteCents, state.additionalCents, state.usageCents, state.nonUsageCents]
+	return amounts.some(cents => cents !== null && cents < 0)
 }
 
 function sameState(a: LedgerState, b: LedgerState): boolean {
@@ -46,6 +77,10 @@ function sameState(a: LedgerState, b: LedgerState): boolean {
 		&& a.paidCents === b.paidCents
 		&& a.discountCents === b.discountCents
 		&& a.balanceCents === b.balanceCents
+		&& a.creditNoteCents === b.creditNoteCents
+		&& a.additionalCents === b.additionalCents
+		&& a.usageCents === b.usageCents
+		&& a.nonUsageCents === b.nonUsageCents
 }
 
 function latestInvoice(entries: readonly LedgerEntry[]): LedgerEntry | null {

@@ -12,7 +12,7 @@ Cómo levantarlo y probarlo: [`README.md`](../README.md).
 
 **Montos en centavos enteros.** El residual `0,001317` y errores como `0.1 + 0.2` nunca llegan a una suma.
 
-**La simulación es el mismo código.** Cada corrida busca (HTTP), decide (reglas puras) y aplica (sincrónico, en una transacción). Simular ejecuta exactamente lo mismo y termina en `ROLLBACK`. Nunca hay un `await` dentro de la transacción: con una sola conexión a SQLite, el panel vería datos a medio escribir.
+**La simulación es el mismo código.** Cada corrida busca (HTTP), decide (reglas puras) y aplica (sincrónico, en una transacción). Simular ejecuta exactamente lo mismo y termina en `ROLLBACK`. Solo queda el registro de la corrida en el historial. Nunca hay un `await` dentro de la transacción: con una sola conexión a SQLite, el panel vería datos a medio escribir.
 
 **Idempotencia en dos niveles:** la corrida detecta lo «ya importado» y además `external_id` es `UNIQUE` en la base.
 
@@ -24,7 +24,7 @@ Cómo levantarlo y probarlo: [`README.md`](../README.md).
 
 **Una corrida a la vez.** Un candado evita que una corrida manual y la automática se pisen.
 
-**Corrida automática:** «ya pasó la hora y todavía no corrió hoy», así se recupera si el servidor estaba apagado. La fecha de la última corrida se guarda con el mismo reloj con el que se compara; si no, el `SANDBOX_TODAY` fijo la dispararía cada minuto.
+**Corrida automática:** «ya pasó la hora y todavía no corrió hoy», así se recupera si el servidor estaba apagado. «Hoy» es el día real de Caracas (`calendarDay`), no el `SANDBOX_TODAY`: con la fecha fijada correría una sola vez para siempre. La última corrida se guarda con el mismo reloj con el que se compara.
 
 **Precarga del proveedor.** `npm start` completa el proveedor con el sandbox solo si nunca se configuró, para que se pueda importar de una. En producción arrancaría vacío.
 

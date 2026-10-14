@@ -1,12 +1,13 @@
-import { today } from '../../shared/dates.ts'
+import type { Clock } from '../../cobrix/application/interfaces/run.interface.ts'
 import type { Settings } from '../../cobrix/domain/interfaces/settings.interface.ts'
 import { formatCents } from '../../cobrix/domain/money.ts'
+import { SANDBOX_DATE_LABEL, SANDBOX_PINNED_NOTE } from '../constants/copy.constants.ts'
 import { NOT_CONFIGURED } from '../constants/labels.constants.ts'
 import { date } from '../format.ts'
 import { html, type Raw } from '../html.ts'
 import { facts } from './ui.ts'
 
-export function providerFacts(settings: Settings, simulatorUrl: string): Raw {
+export function providerFacts(settings: Settings, simulatorUrl: string, clock: Clock): Raw {
 	const { provider, importRules, caps, autoRun } = settings
 	return facts([
 		['URL de la API', provider.baseUrl ? html`<span class="mono">${provider.baseUrl}</span>` : NOT_CONFIGURED],
@@ -19,8 +20,15 @@ export function providerFacts(settings: Settings, simulatorUrl: string): Raw {
 		['Topes por corrida', capsLabel(caps.maxNewInvoices, caps.maxNewAmountCents)],
 		['Documentos excluidos', importRules.excludedDocumentTypes.join(', ') || 'Ninguno'],
 		['Corrida automática', autoRun.enabled ? `Activa todos los días a las ${autoRun.time} (hora de Caracas)` : 'Apagada'],
-		['Fecha de hoy', date(today())],
+		[SANDBOX_DATE_LABEL, sandboxDate(clock)],
 	])
+}
+
+function sandboxDate(clock: Clock): Raw | string {
+	const businessDay = clock.today()
+	const calendarDay = clock.calendarDay()
+	if (businessDay === calendarDay) return date(businessDay)
+	return html`${date(businessDay)}<span class="sub">${SANDBOX_PINNED_NOTE} ${date(calendarDay)}</span>`
 }
 
 function capsLabel(maxInvoices: number | null, maxAmountCents: number | null): string {

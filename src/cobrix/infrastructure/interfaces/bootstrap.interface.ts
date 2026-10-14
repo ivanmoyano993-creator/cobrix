@@ -18,6 +18,7 @@ export interface CobrixOptions {
 export interface Cobrix {
 	readonly persistence: Persistence
 	readonly progress: RunProgressReader
+	readonly clock: Clock
 	runImport(request: RunRequest): Promise<Run>
 	runUpdatePaid(request: RunRequest): Promise<Run>
 	startImport(request: RunRequest): Promise<number>

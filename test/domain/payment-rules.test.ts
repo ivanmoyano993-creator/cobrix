@@ -11,12 +11,12 @@ interface LedgerFixtureState {
 	readonly fee?: number
 }
 
-function entry(installmentId: number, invoiceId: number, issuedOn: string, state: LedgerFixtureState, overrides: Partial<LedgerPayment> = {}): LedgerEntry {
+function entry(installmentId: number, invoiceId: number, issuedOn: string, state: LedgerFixtureState, overrides: Partial<LedgerPayment> = {}, outerContractId = 900101): LedgerEntry {
 	return {
 		invoiceId,
 		invoiceNumber: invoiceId ? String(invoiceId).padStart(9, '0') : '',
 		issuedOn,
-		contractId: 900101,
+		contractId: outerContractId,
 		payment: {
 			contractId: 900101,
 			installmentId,
@@ -25,6 +25,10 @@ function entry(installmentId: number, invoiceId: number, issuedOn: string, state
 			paid: state.paid,
 			discount: state.discount ?? 0,
 			balance: state.balance,
+			creditNote: 0,
+			additional: 0,
+			usage: 0,
+			nonUsage: 0,
 			...overrides,
 		},
 	}
@@ -76,6 +80,46 @@ describe('classifyPayment', () => {
 			assert.equal(result.outcome, 'inconsistent', name)
 			if (result.outcome === 'inconsistent') assert.ok(result.detail.length > 0, name)
 		}
+	})
+
+	it('el contrato externo de la fila también debe coincidir con el pedido', () => {
+		const result = classify([entry(7000008, 8800120, '2026-10-13', { balance: 0, paid: 25 }, {}, 900102)])
+		assert.equal(result.outcome, 'inconsistent')
+	})
+
+	it('el contrato interno distinto sigue siendo inconsistente aunque el externo coincida', () => {
+		const result = classify([entry(7000008, 8800120, '2026-10-13', { balance: 0, paid: 25 }, { contractId: 900102 })])
+		assert.equal(result.outcome, 'inconsistent')
+	})
+
+	it('filas que difieren en un monto opcional (en centavos) son inconsistentes', () => {
+		const paid = { balance: 0, paid: 25 }
+		const cases: Array<[string, Partial<LedgerPayment>, Partial<LedgerPayment>]> = [
+			['nota de crédito 10 vs 12', { creditNote: 10 }, { creditNote: 12 }],
+			['adicional 10 vs 12', { additional: 10 }, { additional: 12 }],
+			['null vs 0', { usage: null }, { usage: 0 }],
+			['null vs número', { nonUsage: null }, { nonUsage: 10 }],
+		]
+		for (const [name, first, second] of cases) {
+			const result = classify([entry(7000008, 8800007, '2026-08-06', paid, first), entry(7000008, 8800120, '2026-10-13', paid, second)])
+			assert.equal(result.outcome, 'inconsistent', name)
+		}
+	})
+
+	it('montos opcionales ausentes en todas las filas son coherentes', () => {
+		const absent = { creditNote: null, additional: null, usage: null, nonUsage: null }
+		const paid = { balance: 0, paid: 25 }
+		const result = classify([entry(7000008, 8800007, '2026-08-06', paid, absent), entry(7000008, 8800120, '2026-10-13', paid, absent)])
+		assert.equal(result.outcome, 'paid')
+	})
+
+	it('un monto opcional negativo es inconsistente', () => {
+		const result = classify([entry(7000008, 8800120, '2026-10-13', { balance: 0, paid: 25 }, { usage: -1 })])
+		assert.equal(result.outcome, 'inconsistent')
+	})
+
+	it('una nota de crédito nunca implica pago: saldo 0 sin pagos sigue exonerada', () => {
+		assert.deepEqual(classify([entry(7000008, 0, '2026-08-31', { balance: 0, paid: 0 }, { creditNote: 25 })]), { outcome: 'exempt' })
 	})
 
 	it('si no aparece en el libro, consulta el contrato (cuota del mes en curso)', () => {

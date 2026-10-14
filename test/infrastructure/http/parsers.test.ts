@@ -4,6 +4,7 @@ import { describe, it } from 'node:test'
 import { PROVIDER_ERROR_KIND } from '../../../src/cobrix/domain/constants/provider.constants.ts'
 import { ProviderError } from '../../../src/cobrix/domain/provider-error.ts'
 import { parseApiErrorMessage, parseContractIds, parseDebtLines, parseLedger, parseSession } from '../../../src/cobrix/infrastructure/http/parsers.ts'
+import { isJsonObject } from '../../../src/cobrix/infrastructure/http/json.ts'
 import type { JsonObject, JsonValue } from '../../../src/cobrix/infrastructure/types/json.types.ts'
 
 function debtRow(overrides: JsonObject = {}): JsonObject {
@@ -117,8 +118,27 @@ describe('parseLedger', () => {
 			invoiceNumber: '008800007',
 			issuedOn: '2026-08-06',
 			contractId: 900101,
-			payment: { contractId: 900101, installmentId: 7000008, period: '2026-08', fee: 25, paid: 5, discount: 0, balance: 20 },
+			payment: { contractId: 900101, installmentId: 7000008, period: '2026-08', fee: 25, paid: 5, discount: 0, balance: 20, creditNote: null, additional: null, usage: null, nonUsage: null },
 		}])
+	})
+
+	it('lee los montos opcionales cuando vienen y los deja en null cuando faltan o vienen en null', () => {
+		const detail = ledgerRow().detalle_pago
+		const base = isJsonObject(detail) ? detail : {}
+		const present = ledgerRow({ detalle_pago: { ...base, valor_nota_credito: 10, total_adicional: 0, valor_uso: 3.5, valor_no_uso: 1 } })
+		assert.deepEqual(parseLedger({ data: [present] })[0]?.payment, { contractId: 900101, installmentId: 7000008, period: '2026-08', fee: 25, paid: 5, discount: 0, balance: 20, creditNote: 10, additional: 0, usage: 3.5, nonUsage: 1 })
+		const explicit = ledgerRow({ detalle_pago: { ...base, valor_nota_credito: null, total_adicional: null, valor_uso: null, valor_no_uso: null } })
+		const payment = parseLedger({ data: [explicit] })[0]?.payment
+		assert.deepEqual([payment?.creditNote, payment?.additional, payment?.usage, payment?.nonUsage], [null, null, null, null])
+	})
+
+	it('un monto opcional presente con otro tipo es una respuesta inválida', () => {
+		const detail = ledgerRow().detalle_pago
+		const base = isJsonObject(detail) ? detail : {}
+		assertMalformed(() => parseLedger({ data: [ledgerRow({ detalle_pago: { ...base, valor_nota_credito: '5' } })] }), /data\[0\]\.detalle_pago\.valor_nota_credito/)
+		assertMalformed(() => parseLedger({ data: [ledgerRow({ detalle_pago: { ...base, total_adicional: true } })] }), /data\[0\]\.detalle_pago\.total_adicional/)
+		assertMalformed(() => parseLedger({ data: [ledgerRow({ detalle_pago: { ...base, valor_uso: {} } })] }), /data\[0\]\.detalle_pago\.valor_uso/)
+		assertMalformed(() => parseLedger({ data: [ledgerRow({ detalle_pago: { ...base, valor_no_uso: [1] } })] }), /data\[0\]\.detalle_pago\.valor_no_uso/)
 	})
 
 	it('rechaza filas con detalle_pago incompleto', () => {

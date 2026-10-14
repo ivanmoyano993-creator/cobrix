@@ -47,7 +47,7 @@ cp .env.example .env
 
 El ciclo de los criterios de aceptación (§5), desde el panel:
 
-1. **Sincronización → Simular importación.** Muestra qué se importaría, cuota por cuota y con el motivo de cada exclusión, sin escribir nada: 42 cuotas.
+1. **Sincronización → Simular importación.** Muestra qué se importaría, cuota por cuota y con el motivo de cada exclusión, sin tocar clientes, contratos ni facturas (la simulación queda en el historial de corridas): 42 cuotas.
 2. **Importar.** Se ve el progreso en vivo y al terminar: 20 clientes y 42 facturas abiertas por USD 1.235,00.
 3. **Clientes.** Ordenados por deuda, con días de atraso. LUIS GOMEZ tiene 2 contratos; ELENA RUIZ queda con ID `9000123`.
 4. **Pagar en la caja del ISP.** En el Swagger, sección **Simulador**, `POST /__sim/pagar` con `{"id_contrato": 900101}` (toda la deuda) o `{"id_contrato": 900103, "monto": 25}` (abono parcial). `POST /__sim/anular` anula un cobro.
@@ -96,7 +96,7 @@ src/billing-api/     API simulada del ISP (entregada, no se modifica)
 
 Cada capa separa `constants/`, `interfaces/` y `types/` de los archivos con funciones.
 
-**Cómo trabaja una corrida:** busca (HTTP, un contrato por vez) → decide (reglas puras del dominio) → aplica (sincrónico, en una transacción). La simulación ejecuta exactamente lo mismo y termina en `ROLLBACK`. Nunca hay un `await` dentro de la transacción, así que el panel no ve datos a medio escribir.
+**Cómo trabaja una corrida:** busca (HTTP, un contrato por vez) → decide (reglas puras del dominio) → aplica (sincrónico, en una transacción). La simulación ejecuta exactamente lo mismo y termina en `ROLLBACK`. Solo queda el registro de la corrida en el historial. Nunca hay un `await` dentro de la transacción, así que el panel no ve datos a medio escribir.
 
 **Errores:** credenciales malas o la API caída hacen fallar la corrida, que queda registrada con el error. Un contrato con error HTTP o JSON inesperado queda fuera con su motivo y la corrida sigue. Lo que no encaja nunca se adivina.
 

@@ -31,7 +31,7 @@ export function summaryPage(deps: AppDeps, settings: Settings): Page {
 			<div class="cards">
 				<section class="card">
 					<header><div><h2>Proveedor</h2><p>Administrador de facturas del ISP</p></div><a href="${ROUTE.Settings}">Editar configuración</a></header>
-					<div class="body">${providerFacts(settings, deps.simulatorUrl)}</div>
+					<div class="body">${providerFacts(settings, deps.simulatorUrl, deps.cobrix.clock)}</div>
 				</section>
 				${actionsCard(running)}
 			</div>

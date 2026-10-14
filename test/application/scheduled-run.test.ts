@@ -9,8 +9,8 @@ import type { DebtLine } from '../../src/cobrix/domain/interfaces/import.interfa
 import { createFakeProvider, debtLine } from '../support/fake-provider.ts'
 import { createTestPersistence, type TestPersistence } from '../support/test-persistence.ts'
 
-function clockAt(localTime: string): Clock {
-	return { now: () => '2026-10-13T14:00:00.000Z', currentPeriod: () => '2026-10', today: () => '2026-10-13', localTime: () => localTime }
+function clockAt(localTime: string, calendarDay = '2026-10-13'): Clock {
+	return { now: () => '2026-10-13T14:00:00.000Z', currentPeriod: () => '2026-10', today: () => '2026-10-13', calendarDay: () => calendarDay, localTime: () => localTime }
 }
 
 const DEBTS = new Map<number, readonly DebtLine[]>([[900101, [debtLine(900101, '2026-10', 25, '7000010')]]])
@@ -18,9 +18,9 @@ const DEBTS = new Map<number, readonly DebtLine[]>([[900101, [debtLine(900101, '
 describe('runScheduledIfDue', () => {
 	let context: TestPersistence
 
-	function deps(localTime: string, guard = createRunGuard()): ScheduledRunDeps {
+	function deps(localTime: string, guard = createRunGuard(), calendarDay = '2026-10-13'): ScheduledRunDeps {
 		const provider = createFakeProvider({ debts: DEBTS })
-		return { ...context.persistence, providerFor: () => provider, clock: clockAt(localTime), guard }
+		return { ...context.persistence, providerFor: () => provider, clock: clockAt(localTime, calendarDay), guard }
 	}
 
 	beforeEach(() => {
@@ -48,6 +48,16 @@ describe('runScheduledIfDue', () => {
 	it('corre una sola vez por día', async () => {
 		await runScheduledIfDue(deps('06:01'))
 		assert.deepEqual(await runScheduledIfDue(deps('18:00')), [])
+	})
+
+	it('con la fecha de negocio fijada, corre una vez por día calendario real y vuelve a correr al día siguiente', async () => {
+		const first = await runScheduledIfDue(deps('06:01', createRunGuard(), '2026-10-13'))
+		assert.equal(first.length, 2)
+		assert.equal(context.persistence.schedule.lastRunDate(), '2026-10-13')
+		assert.deepEqual(await runScheduledIfDue(deps('06:02', createRunGuard(), '2026-10-13')), [])
+		const next = await runScheduledIfDue(deps('06:01', createRunGuard(), '2026-10-14'))
+		assert.equal(next.length, 2)
+		assert.equal(context.persistence.schedule.lastRunDate(), '2026-10-14')
 	})
 
 	it('si hay otra corrida en curso, no marca el día y lo reintenta en la próxima revisión', async () => {
