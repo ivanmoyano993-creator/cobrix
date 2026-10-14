@@ -4,9 +4,11 @@ export const UPDATE_PAID_CONFIRM = 'Se van a marcar pagadas las facturas que el 
 
 export const RUN_IN_PROGRESS_NOTE = 'Hay una corrida en curso. Las acciones se habilitan cuando termine.'
 
+export const DRY_RUN_NOTE = 'Simular hace exactamente lo mismo, pero no modifica clientes, contratos ni facturas: la simulación solo queda en el historial de corridas.'
+
 export const NO_RUNS = {
 	title: 'Todavía no hay corridas',
-	text: 'Empieza con «Simular importación»: muestra qué se importaría sin escribir nada. Cuando el resultado te convenza, importa.',
+	text: `Empieza con «Simular importación» para ver qué se importaría. ${DRY_RUN_NOTE} Cuando el resultado te convenza, importa.`,
 } as const
 
 export const FAILED_RUN_HINT = 'Revisa la URL, el usuario y la contraseña del proveedor en Configuración y vuelve a intentarlo.'

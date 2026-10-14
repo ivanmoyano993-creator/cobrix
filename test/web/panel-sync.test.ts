@@ -25,6 +25,15 @@ describe('panel: Resumen, Sincronización y detalle de corrida', () => {
 		assert.doesNotMatch(body, /cobrix-sandbox/)
 	})
 
+	it('Resumen y Sincronización dicen que simular no modifica datos y deja registro en el historial', async () => {
+		for (const path of ['/', '/sincronizacion']) {
+			const { body } = await panel.get(path)
+			assert.match(body, /no modifica clientes, contratos ni facturas/)
+			assert.match(body, /historial de corridas/)
+			assert.doesNotMatch(body, /no escribe nada|sin escribir nada/)
+		}
+	})
+
 	it('simular importación lleva al detalle de la corrida y no importa nada', async () => {
 		const response = await panel.post('/sincronizacion/importar', { simular: '1' })
 		await panel.waitIdle()

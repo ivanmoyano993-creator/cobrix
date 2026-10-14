@@ -12,7 +12,7 @@ Cómo levantarlo y probarlo: [`README.md`](../README.md).
 
 **Montos en centavos enteros.** El residual `0,001317` y errores como `0.1 + 0.2` nunca llegan a una suma.
 
-**La simulación es el mismo código.** Cada corrida busca (HTTP), decide (reglas puras) y aplica (sincrónico, en una transacción). Simular ejecuta exactamente lo mismo y termina en `ROLLBACK`. Nunca hay un `await` dentro de la transacción: con una sola conexión a SQLite, el panel vería datos a medio escribir.
+**La simulación es el mismo código.** Cada corrida busca (HTTP), decide (reglas puras) y aplica (sincrónico, en una transacción). Simular ejecuta exactamente lo mismo y termina en `ROLLBACK`. Solo queda el registro de la corrida en el historial. Nunca hay un `await` dentro de la transacción: con una sola conexión a SQLite, el panel vería datos a medio escribir.
 
 **Idempotencia en dos niveles:** la corrida detecta lo «ya importado» y además `external_id` es `UNIQUE` en la base.
 

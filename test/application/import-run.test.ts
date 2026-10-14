@@ -75,7 +75,7 @@ describe('runImport', () => {
 		assert.equal(run.counters[`contracts_${CONTRACT_REJECTION.ExcludedStatus}`], 1)
 	})
 
-	it('simular hace exactamente lo mismo pero no escribe nada', async () => {
+	it('simular hace exactamente lo mismo pero no modifica clientes ni facturas', async () => {
 		const dry = await runImport(deps({ debts: baseDebts() }), DRY_RUN)
 		assert.equal(dry.dryRun, true)
 		assert.equal(dry.counters[RUN_ITEM_OUTCOME.Imported], 4)
