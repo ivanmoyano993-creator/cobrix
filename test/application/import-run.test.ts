@@ -126,6 +126,28 @@ describe('runImport', () => {
 		assert.equal(context.persistence.invoices.listOpen().length, 0)
 	})
 
+	it('avisa al observador cuando empieza, contrato por contrato y cuando termina', async () => {
+		const events: string[] = []
+		const observer = {
+			started: (event: { runId: number }) => events.push(`started:${event.runId}`),
+			stepped: (event: { done: number; total: number; label: string }) => events.push(`${event.done}/${event.total} ${event.label}`),
+			finished: (runId: number) => events.push(`finished:${runId}`),
+		}
+		const run = await runImport({ ...deps({ debts: baseDebts() }), observer }, MANUAL)
+		assert.equal(events[0], `started:${run.id}`)
+		assert.equal(events[1], '1/6 Contrato 900101')
+		assert.equal(events[6], '6/6 Contrato 900111')
+		assert.equal(events.at(-1), `finished:${run.id}`)
+	})
+
+	it('avisa el final aunque la corrida falle', async () => {
+		const finished: number[] = []
+		const observer = { started: () => undefined, stepped: () => undefined, finished: (runId: number) => finished.push(runId) }
+		const listFailure = new ProviderError(PROVIDER_ERROR_KIND.Network, 'No se pudo conectar')
+		const run = await runImport({ ...deps({ debts: baseDebts(), listFailure }), observer }, MANUAL)
+		assert.deepEqual(finished, [run.id])
+	})
+
 	it('sin proveedor configurado falla y explica qué hacer', async () => {
 		const run = await runImport(deps({ debts: baseDebts() }, { provider: { baseUrl: '', username: '', password: '' } }), MANUAL)
 		assert.equal(run.status, RUN_STATUS.Failed)

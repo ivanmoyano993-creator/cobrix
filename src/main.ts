@@ -21,6 +21,7 @@ const { createApp } = await import('./web/app.ts')
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const billingApiDb = process.env.BILLING_API_DB ?? DEFAULT_BILLING_API_DB
 const cobrixDataDir = process.env.COBRIX_DATA_DIR ?? resolve(root, 'data')
+const simulatedLatencyMs = Number(process.env.COBRIX_SIMULATED_LATENCY_MS ?? 120)
 const appPort = Number(process.env.PORT ?? 4300)
 const billingApiPort = Number(process.env.BILLING_API_PORT ?? 4310)
 const host = process.env.HOST ?? '127.0.0.1'
@@ -35,6 +36,7 @@ const cobrix = createCobrix({
 	dataDir: cobrixDataDir,
 	secretKeyEnv: process.env.COBRIX_SECRET_KEY,
 	defaultProvider: { baseUrl: `${simulatorUrl}/api/v1`, username: SANDBOX_API_USER.user_name, password: SANDBOX_API_USER.password },
+	simulatedLatencyMs: Number.isFinite(simulatedLatencyMs) ? simulatedLatencyMs : 0,
 })
 cobrix.startScheduler()
 
@@ -45,6 +47,7 @@ console.log(`Panel (esqueleto):        http://${host}:${appPort}`)
 console.log(`API del administrador:    ${simulatorUrl}/api/v1`)
 console.log(`Swagger:                  ${simulatorUrl}/docs`)
 console.log(`Fecha de la prueba:       ${process.env.SANDBOX_TODAY}`)
+console.log(`Latencia simulada:        ${simulatedLatencyMs} ms por pedido al administrador (COBRIX_SIMULATED_LATENCY_MS=0 la desactiva)`)
 
 const shutdown = (): void => {
 	app.close()

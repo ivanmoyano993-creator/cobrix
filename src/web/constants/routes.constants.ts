@@ -13,6 +13,15 @@ export const ROUTE = {
 
 export const RUN_DETAIL_PATTERN = /^\/sincronizacion\/corridas\/(\d+)$/
 
+export const RUN_PROGRESS_PATTERN = /^\/sincronizacion\/corridas\/(\d+)\/progreso$/
+
+export const PROGRESS_SUFFIX = '/progreso'
+
+export const PROGRESS_EVENT = {
+	Progress: 'progress',
+	Finished: 'finished',
+} as const
+
 export const CUSTOMER_FILE_PATTERN = /^\/clientes\/([^/]+)$/
 
 export const SEARCH_PARAM = 'q'

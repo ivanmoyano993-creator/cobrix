@@ -1,8 +1,9 @@
 import type { Settings } from '../../cobrix/domain/interfaces/settings.interface.ts'
 import { providerFacts } from '../components/provider-facts.ts'
 import { actionsCard } from '../components/run-actions.ts'
+import { runningBanner } from '../components/progress.ts'
 import { emptyState, runsTable, tiles } from '../components/ui.ts'
-import { NO_RUNS, RUN_IN_PROGRESS_NOTE } from '../constants/copy.constants.ts'
+import { NO_RUNS } from '../constants/copy.constants.ts'
 import { HTTP_STATUS, ROUTE, SUMMARY_RUNS_LIMIT } from '../constants/routes.constants.ts'
 import { usd } from '../format.ts'
 import { html } from '../html.ts'
@@ -19,7 +20,7 @@ export function summaryPage(deps: AppDeps, settings: Settings): Page {
 		active: ROUTE.Home,
 		body: html`
 			<div class="head"><div><h1>Resumen</h1><p>Clientes y facturas que Cobrix trae del administrador de facturas del ISP, y los pagos que el ISP ya cobró.</p></div></div>
-			${running ? html`<div class="flash info" role="status">${RUN_IN_PROGRESS_NOTE}</div>` : ''}
+			${runningBanner(deps.cobrix.progress.current())}
 			${tiles([
 				{ label: 'Clientes importados', value: String(overview.customers) },
 				{ label: 'Contratos', value: String(overview.contracts) },

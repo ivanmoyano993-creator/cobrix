@@ -1,3 +1,4 @@
+import type { RunProgressReader } from '../../application/interfaces/progress.interface.ts'
 import type { Clock, RunRequest } from '../../application/interfaces/run.interface.ts'
 import type { ProviderConfig } from '../../domain/interfaces/provider.interface.ts'
 import type { Persistence } from '../../domain/interfaces/repositories.interface.ts'
@@ -11,12 +12,16 @@ export interface CobrixOptions {
 	readonly secretKeyEnv: string | undefined
 	readonly defaultProvider: ProviderConfig | null
 	readonly clock?: Clock
+	readonly simulatedLatencyMs?: number
 }
 
 export interface Cobrix {
 	readonly persistence: Persistence
+	readonly progress: RunProgressReader
 	runImport(request: RunRequest): Promise<Run>
 	runUpdatePaid(request: RunRequest): Promise<Run>
+	startImport(request: RunRequest): Promise<number>
+	startUpdatePaid(request: RunRequest): Promise<number>
 	isRunning(): boolean
 	currentSettings(): Settings
 	updateSettings(input: SettingsInput): SettingsValidation

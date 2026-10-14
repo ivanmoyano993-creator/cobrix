@@ -12,6 +12,7 @@ import { toCents } from '../domain/money.ts'
 import { classifyPayment } from '../domain/payment-rules.ts'
 import { ProviderError } from '../domain/provider-error.ts'
 import type { RunItemOutcome } from '../domain/types/run.types.ts'
+import { CONTRACT_STEP_LABEL } from './constants/progress.constants.ts'
 import { CHECKED, FETCH_FAILED, RUN_COUNTER } from './constants/run.constants.ts'
 import type { RunContext, RunOutcome, RunRequest, UpdatePaidRunDeps } from './interfaces/run.interface.ts'
 import { executeRun, isFatalKind, tally, transactionMode } from './run-executor.ts'
@@ -28,8 +29,10 @@ export function runUpdatePaid(deps: UpdatePaidRunDeps, request: RunRequest): Pro
 
 async function checkInvoices(context: RunContext, open: readonly Invoice[], currentPeriod: string): Promise<PaymentCheck[]> {
 	const checks: PaymentCheck[] = []
-	for (const [contractId, invoices] of groupByContract(open)) {
+	const groups = [...groupByContract(open)]
+	for (const [index, [contractId, invoices]] of groups.entries()) {
 		checks.push(...await checkContract(context, contractId, invoices, currentPeriod))
+		context.step(index + 1, groups.length, `${CONTRACT_STEP_LABEL} ${contractId}`)
 	}
 	return checks
 }

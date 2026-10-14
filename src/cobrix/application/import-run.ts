@@ -9,6 +9,7 @@ import type { Run, RunItem } from '../domain/interfaces/run.interface.ts'
 import { ProviderError } from '../domain/provider-error.ts'
 import type { RunItemOutcome } from '../domain/types/run.types.ts'
 import { HELD_BY_CAP_DETAIL } from './constants/messages.constants.ts'
+import { CONTRACT_STEP_LABEL } from './constants/progress.constants.ts'
 import { FETCH_FAILED, REJECTED_CONTRACT_COUNTER_PREFIX, RUN_COUNTER } from './constants/run.constants.ts'
 import type { ContractFetchFailure, ImportCandidate, ImportRunDeps, RunContext, RunOutcome, RunRequest } from './interfaces/run.interface.ts'
 import { byContractAndPeriod, executeRun, isFatalKind, tally, transactionMode } from './run-executor.ts'
@@ -32,7 +33,10 @@ export function runImport(deps: ImportRunDeps, request: RunRequest): Promise<Run
 async function fetchContracts(context: RunContext, currentPeriod: string): Promise<ContractFetch[]> {
 	const ids = await context.provider.listContractIds()
 	const fetched: ContractFetch[] = []
-	for (const contractId of ids) fetched.push(await fetchContract(context, contractId, currentPeriod))
+	for (const [index, contractId] of ids.entries()) {
+		fetched.push(await fetchContract(context, contractId, currentPeriod))
+		context.step(index + 1, ids.length, `${CONTRACT_STEP_LABEL} ${contractId}`)
+	}
 	return fetched
 }
 

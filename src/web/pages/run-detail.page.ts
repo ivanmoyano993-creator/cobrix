@@ -9,9 +9,11 @@ import { EMPTY_VALUE } from '../constants/ui.constants.ts'
 import { date, dateTime, duration, usd } from '../format.ts'
 import { html, type Raw } from '../html.ts'
 import type { Page } from '../interfaces/web.interface.ts'
+import { progressCard } from '../components/progress.ts'
+import type { RunProgress } from '../../cobrix/application/interfaces/progress.interface.ts'
 import { counterLabel, counterValue, orderedCounters, outcomeBadge } from '../labels.ts'
 
-export function runDetailPage(run: Run, filter: RunItemOutcome | null): Page {
+export function runDetailPage(run: Run, filter: RunItemOutcome | null, progress: RunProgress | null): Page {
 	const title = `${RUN_KIND_LABEL[run.kind]} #${run.id}`
 	return {
 		status: HTTP_STATUS.Ok,
@@ -24,6 +26,7 @@ export function runDetailPage(run: Run, filter: RunItemOutcome | null): Page {
 				<p>${dateTime(run.startedAt)} · ${RUN_TRIGGER_LABEL[run.trigger]} · ${duration(run.startedAt, run.finishedAt)}</p>
 				${run.summary ? html`<p><strong>${run.summary}</strong></p>` : ''}
 			</div></div>
+			${progress === null ? '' : progressCard(progress)}
 			${run.status === RUN_STATUS.Failed ? failure(run) : ''}
 			${highlights(run)}
 			${countersCard(run)}
@@ -57,7 +60,7 @@ function counterRow(name: string, value: number, dryRun: boolean): Raw {
 }
 
 function itemsCard(run: Run, filter: RunItemOutcome | null): Raw | string {
-	if (run.status === RUN_STATUS.Failed) return ''
+	if (run.status !== RUN_STATUS.Completed) return ''
 	const items = filter === null ? run.items : run.items.filter(item => item.outcome === filter)
 	return html`<section class="card">
 		<header><div><h2>Detalle</h2><p>Una fila por cuota con su resultado y el motivo.</p></div>${outcomeChips(run, filter)}</header>
