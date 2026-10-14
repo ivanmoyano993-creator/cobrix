@@ -17,6 +17,8 @@ import type { ProviderError } from '../../domain/provider-error.ts'
 import type { PaymentVerdict } from '../../domain/types/payment.types.ts'
 import type { RunCounters, RunTrigger } from '../../domain/types/run.types.ts'
 import type { CHECKED, FETCH_FAILED } from '../constants/run.constants.ts'
+import type { StepReporter } from '../types/progress.types.ts'
+import type { RunObserver } from './progress.interface.ts'
 
 export interface Clock {
 	now(): string
@@ -47,6 +49,7 @@ export interface RunDeps {
 	readonly runs: RunRepository
 	readonly providerFor: (config: ProviderConfig) => BillingProvider
 	readonly clock: Clock
+	readonly observer?: RunObserver
 }
 
 export interface ImportRunDeps extends RunDeps {
@@ -73,6 +76,7 @@ export interface RunContext {
 	readonly settings: Settings
 	readonly provider: BillingProvider
 	readonly request: RunRequest
+	readonly step: StepReporter
 }
 
 export interface RunOutcome {

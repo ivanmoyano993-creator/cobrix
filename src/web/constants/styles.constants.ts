@@ -108,6 +108,9 @@ small.error { color: var(--bad); font-weight: 600; }
 .action-block { display: grid; gap: 6px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
 .action-block:last-child { padding-bottom: 0; border-bottom: 0; }
 .action-block p { margin: 0 0 4px; color: var(--muted); font-size: 13px; }
+.progress-card { border-color: var(--info); }
+.progress-card progress { width: 100%; height: 10px; accent-color: var(--primary); }
+.progress-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; font-variant-numeric: tabular-nums; }
 .note { background: var(--sunken); border-radius: 8px; padding: 10px 14px; color: var(--muted); font-size: 13px; }
 ul.todo, ol.todo { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 90ch; }
 pre.doc { margin: 0; white-space: pre-wrap; font: 13.5px/1.6 var(--mono); color: var(--fg); max-width: 110ch; }

@@ -47,6 +47,25 @@ describe('createCobrix', () => {
 		cobrix.close()
 	})
 
+	it('arrancar una corrida devuelve su número enseguida y el progreso se puede seguir hasta el final', async () => {
+		const cobrix = createCobrix({ dataDir: dir, secretKeyEnv: undefined, defaultProvider: SANDBOX, simulatedLatencyMs: 150 })
+		const runId = await cobrix.startImport(MANUAL)
+		assert.equal(cobrix.isRunning(), true)
+		assert.equal(cobrix.persistence.runs.get(runId)?.status, RUN_STATUS.Running)
+		assert.notEqual(cobrix.progress.snapshot(runId), null)
+		await assert.rejects(cobrix.startUpdatePaid(MANUAL), RunInProgressError)
+		await new Promise<void>(resolve => {
+			const stop = cobrix.progress.subscribe(runId, progress => {
+				if (!progress.finished) return
+				stop()
+				resolve()
+			})
+		})
+		assert.equal(cobrix.persistence.runs.get(runId)?.status, RUN_STATUS.Failed)
+		assert.equal(cobrix.progress.snapshot(runId), null)
+		cobrix.close()
+	})
+
 	it('las corridas manuales quedan registradas y no se pisan entre sí', async () => {
 		const cobrix = createCobrix({ dataDir: dir, secretKeyEnv: undefined, defaultProvider: SANDBOX })
 		const [first, second] = await Promise.allSettled([cobrix.runImport(MANUAL), cobrix.runImport(MANUAL)])

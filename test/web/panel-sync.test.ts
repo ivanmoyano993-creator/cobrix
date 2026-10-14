@@ -27,6 +27,7 @@ describe('panel: Resumen, Sincronización y detalle de corrida', () => {
 
 	it('simular importación lleva al detalle de la corrida y no importa nada', async () => {
 		const response = await panel.post('/sincronizacion/importar', { simular: '1' })
+		await panel.waitIdle()
 		assert.equal(response.status, 303)
 		assert.match(response.location ?? '', /^\/sincronizacion\/corridas\/\d+/)
 		const { body } = await panel.get(response.location ?? '')
@@ -38,6 +39,7 @@ describe('panel: Resumen, Sincronización y detalle de corrida', () => {
 
 	it('importar crea clientes y facturas, y el Resumen muestra los totales', async () => {
 		const response = await panel.post('/sincronizacion/importar')
+		await panel.waitIdle()
 		const { body } = await panel.get(response.location ?? '')
 		assert.match(body, /Importación #\d+/)
 		assert.match(body, /Importada/)
@@ -58,6 +60,7 @@ describe('panel: Resumen, Sincronización y detalle de corrida', () => {
 
 	it('actualizar pagadas sin pagos nuevos deja todo abierto', async () => {
 		const response = await panel.post('/sincronizacion/actualizar-pagadas')
+		await panel.waitIdle()
 		const { body } = await panel.get(response.location ?? '')
 		assert.match(body, /Actualización de pagadas #\d+/)
 		assert.match(body, /0 facturas marcadas pagadas/)
@@ -77,6 +80,7 @@ describe('panel: Resumen, Sincronización y detalle de corrida', () => {
 		const settings = panel.cobrix.persistence.settings.get()
 		panel.cobrix.persistence.settings.save({ ...settings, provider: { ...settings.provider, password: 'mala' } })
 		const response = await panel.post('/sincronizacion/importar')
+		await panel.waitIdle()
 		const { body } = await panel.get(response.location ?? '')
 		assert.match(body, /Falló/)
 		assert.match(body, /Contraseña Incorrecta/)

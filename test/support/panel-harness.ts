@@ -16,10 +16,15 @@ export interface PanelHarness {
 	readonly cobrix: Cobrix
 	get(path: string): Promise<{ status: number; body: string }>
 	post(path: string, form?: Record<string, string>): Promise<{ status: number; location: string | null }>
+	waitIdle(): Promise<void>
 	close(): Promise<void>
 }
 
-export async function startPanel(): Promise<PanelHarness> {
+export interface PanelOptions {
+	readonly latencyMs?: number
+}
+
+export async function startPanel(options: PanelOptions = {}): Promise<PanelHarness> {
 	process.env.SANDBOX_TODAY = '2026-10-13'
 	const dir = mkdtempSync(join(tmpdir(), 'cobrix-panel-'))
 	seedBillingApi(join(dir, 'billing-api.sqlite'))
@@ -29,6 +34,7 @@ export async function startPanel(): Promise<PanelHarness> {
 		dataDir: join(dir, 'cobrix'),
 		secretKeyEnv: undefined,
 		defaultProvider: { baseUrl: `${apiBase}/api/v1`, username: SANDBOX_API_USER.user_name, password: SANDBOX_API_USER.password },
+		simulatedLatencyMs: options.latencyMs ?? 0,
 	})
 	const app: Server = createApp({ cobrix, simulatorUrl: apiBase, assignmentPath: fileURLToPath(new URL('../../docs/ENUNCIADO.md', import.meta.url)) })
 	await new Promise<void>(resolve => app.listen(0, '127.0.0.1', resolve))
@@ -47,7 +53,11 @@ export async function startPanel(): Promise<PanelHarness> {
 			const response = await fetch(`${base}${path}`, { method: 'POST', body: new URLSearchParams(form), redirect: 'manual' })
 			return { status: response.status, location: response.headers.get('location') }
 		},
+		async waitIdle() {
+			while (cobrix.isRunning()) await new Promise(resolve => setTimeout(resolve, 5))
+		},
 		async close() {
+			while (cobrix.isRunning()) await new Promise(resolve => setTimeout(resolve, 5))
 			await new Promise(resolve => app.close(resolve))
 			cobrix.close()
 			await api.close()

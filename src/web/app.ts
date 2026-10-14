@@ -14,6 +14,7 @@ import {
 	OUTCOME_FILTER_PARAM,
 	ROUTE,
 	RUN_DETAIL_PATTERN,
+	RUN_PROGRESS_PATTERN,
 	SEARCH_PARAM,
 	URL_PARSE_BASE,
 } from './constants/routes.constants.ts'
@@ -21,6 +22,7 @@ import { SETTINGS_SAVED } from './constants/settings-form.constants.ts'
 import { CSS } from './constants/styles.constants.ts'
 import { TONE } from './constants/ui.constants.ts'
 import { html } from './html.ts'
+import { streamProgress } from './events.ts'
 import { readSettingsForm } from './forms.ts'
 import { normalizePath, readFlash, readForm, redirect, send, sendHtml, withFlash } from './http.ts'
 import type { AppDeps, Flash, Page } from './interfaces/web.interface.ts'
@@ -48,6 +50,8 @@ async function route(deps: AppDeps, req: IncomingMessage, res: ServerResponse): 
 	const path = normalizePath(url.pathname)
 	if (req.method === 'POST') return handlePost(deps, req, res, path)
 	if (path === ROUTE.Stylesheet) return send(res, HTTP_STATUS.Ok, CSS, 'text/css; charset=utf-8')
+	const progressRunId = RUN_PROGRESS_PATTERN.exec(path)?.[1]
+	if (progressRunId !== undefined) return streamProgress(deps.cobrix.progress, req, res, Number(progressRunId))
 	render(deps, res, getPage(deps, path, url), readFlash(url))
 }
 
@@ -95,7 +99,7 @@ function runPage(deps: AppDeps, runId: number, url: URL): Page {
 	const run = deps.cobrix.persistence.runs.get(runId)
 	if (run === null) return notFoundPage(`La corrida #${runId} no existe`, ROUTE.Sync, 'Sincronización')
 	const filter = url.searchParams.get(OUTCOME_FILTER_PARAM) ?? ''
-	return runDetailPage(run, isRunItemOutcome(filter) ? filter : null)
+	return runDetailPage(run, isRunItemOutcome(filter) ? filter : null, deps.cobrix.progress.snapshot(runId))
 }
 
 async function handlePost(deps: AppDeps, req: IncomingMessage, res: ServerResponse, path: string): Promise<void> {
@@ -110,8 +114,8 @@ async function startRun(deps: AppDeps, req: IncomingMessage, res: ServerResponse
 	const form = await readForm(req)
 	const request = { dryRun: form.get(DRY_RUN_FIELD) === DRY_RUN_VALUE, trigger: RUN_TRIGGER.Manual }
 	try {
-		const run = kind === RUN_KIND.Import ? await deps.cobrix.runImport(request) : await deps.cobrix.runUpdatePaid(request)
-		redirect(res, `${ROUTE.Runs}/${run.id}`)
+		const runId = kind === RUN_KIND.Import ? await deps.cobrix.startImport(request) : await deps.cobrix.startUpdatePaid(request)
+		redirect(res, `${ROUTE.Runs}/${runId}`)
 	} catch (error) {
 		if (!(error instanceof RunInProgressError)) throw error
 		redirect(res, withFlash(ROUTE.Sync, { tone: TONE.Warn, text: error.message }))
