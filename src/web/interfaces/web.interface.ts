@@ -1,3 +1,5 @@
+import type { SettingsInput } from '../../cobrix/application/interfaces/settings.interface.ts'
+import type { SettingsErrors } from '../../cobrix/application/types/settings.types.ts'
 import type { Cobrix } from '../../cobrix/infrastructure/interfaces/bootstrap.interface.ts'
 import type { Raw } from '../html.ts'
 import type { Tone } from '../types/web.types.ts'
@@ -54,9 +56,25 @@ export interface EmptyState {
 	readonly action: Raw | null
 }
 
-export interface ScreenPlaceholder {
-	readonly title: string
-	readonly purpose: string
-	readonly section: string
-	readonly todo: readonly string[]
+export interface FieldOptions {
+	readonly type?: string
+	readonly hint?: string
+	readonly placeholder?: string
+	readonly inputMode?: string
+	readonly autocomplete?: string
+	readonly min?: number
+	readonly max?: number
+}
+
+export interface Choice {
+	readonly value: string
+	readonly label: string
+}
+
+export interface SettingsPageState {
+	readonly values: SettingsInput
+	readonly errors: SettingsErrors
+	readonly notice: Flash | null
+	readonly status: number
+	readonly hasPassword: boolean
 }

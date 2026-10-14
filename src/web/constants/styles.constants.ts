@@ -82,6 +82,15 @@ input[type=text], input[type=password], input[type=number], input[type=search], 
 fieldset { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin: 0; display: flex; flex-wrap: wrap; gap: 6px 16px; }
 fieldset legend { font-weight: 600; font-size: 13px; padding: 0 4px; }
 fieldset label { display: inline-flex; gap: 6px; align-items: center; font-size: 13.5px; }
+form.settings { display: grid; gap: 16px; }
+.field.invalid input, .field.invalid select, fieldset.invalid { border-color: var(--bad); }
+small.error { color: var(--bad); font-weight: 600; }
+.fieldset-note { flex-basis: 100%; }
+.fieldset-note small { color: var(--muted); font-weight: 400; }
+.toggle { display: flex; gap: 10px; align-items: flex-start; }
+.toggle input { margin-top: 3px; }
+.toggle small { display: block; color: var(--muted); }
+.sticky-actions { position: sticky; bottom: 0; background: var(--bg); padding: 12px 0; border-top: 1px solid var(--line); }
 .search { display: flex; gap: 8px; max-width: 460px; width: 100%; }
 .timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
 .timeline li { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 10px; }

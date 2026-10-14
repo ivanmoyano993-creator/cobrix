@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http'
 
 import { RunInProgressError } from '../cobrix/application/run-in-progress-error.ts'
+import { settingsToInput } from '../cobrix/application/settings-form.ts'
 import { RUN_KIND, RUN_TRIGGER } from '../cobrix/domain/constants/run.constants.ts'
 import type { Settings } from '../cobrix/domain/interfaces/settings.interface.ts'
 import type { RunKind } from '../cobrix/domain/types/run.types.ts'
@@ -16,18 +17,20 @@ import {
 	SEARCH_PARAM,
 	URL_PARSE_BASE,
 } from './constants/routes.constants.ts'
-import { PENDING_SCREENS } from './constants/screens.constants.ts'
+import { SETTINGS_SAVED } from './constants/settings-form.constants.ts'
 import { CSS } from './constants/styles.constants.ts'
 import { TONE } from './constants/ui.constants.ts'
 import { html } from './html.ts'
+import { readSettingsForm } from './forms.ts'
 import { normalizePath, readFlash, readForm, redirect, send, sendHtml, withFlash } from './http.ts'
 import type { AppDeps, Flash, Page } from './interfaces/web.interface.ts'
 import { isRunItemOutcome } from './labels.ts'
 import { layout } from './layout.ts'
 import { customerFilePage } from './pages/customer-file.page.ts'
 import { customersPage } from './pages/customers.page.ts'
-import { assignmentPage, notFoundPage, placeholderPage } from './pages/placeholder.page.ts'
+import { assignmentPage, notFoundPage } from './pages/static.page.ts'
 import { runDetailPage } from './pages/run-detail.page.ts'
+import { connectionNotice, settingsPage } from './pages/settings.page.ts'
 import { summaryPage } from './pages/summary.page.ts'
 import { syncPage } from './pages/sync.page.ts'
 
@@ -57,8 +60,29 @@ function getPage(deps: AppDeps, path: string, url: URL): Page {
 	if (runId !== undefined) return runPage(deps, Number(runId), url)
 	const customerId = CUSTOMER_FILE_PATTERN.exec(path)?.[1]
 	if (customerId !== undefined) return customerPage(deps, decodeURIComponent(customerId))
-	if (PENDING_SCREENS[path]) return pendingPage(path, path)
+	if (path === ROUTE.Settings) return currentSettingsPage(deps)
 	return notFoundPage('No encontrado', ROUTE.Home, 'Resumen')
+}
+
+function currentSettingsPage(deps: AppDeps): Page {
+	const settings = deps.cobrix.currentSettings()
+	return settingsPage({ values: settingsToInput(settings), errors: {}, notice: null, status: HTTP_STATUS.Ok, hasPassword: settings.provider.password !== '' })
+}
+
+async function saveSettings(deps: AppDeps, req: IncomingMessage, res: ServerResponse): Promise<void> {
+	const input = readSettingsForm(await readForm(req))
+	const result = deps.cobrix.updateSettings(input)
+	if (result.ok) return redirect(res, withFlash(ROUTE.Settings, { tone: TONE.Ok, text: SETTINGS_SAVED }))
+	const hasPassword = deps.cobrix.currentSettings().provider.password !== ''
+	render(deps, res, settingsPage({ values: input, errors: result.errors, notice: null, status: HTTP_STATUS.Unprocessable, hasPassword }), undefined)
+}
+
+async function checkConnection(deps: AppDeps, req: IncomingMessage, res: ServerResponse): Promise<void> {
+	const input = readSettingsForm(await readForm(req))
+	const check = await deps.cobrix.testConnection(input)
+	const hasPassword = deps.cobrix.currentSettings().provider.password !== ''
+	const errors = 'errors' in check ? check.errors : {}
+	render(deps, res, settingsPage({ values: input, errors, notice: connectionNotice(check), status: HTTP_STATUS.Ok, hasPassword }), undefined)
 }
 
 function customerPage(deps: AppDeps, customerId: string): Page {
@@ -74,14 +98,11 @@ function runPage(deps: AppDeps, runId: number, url: URL): Page {
 	return runDetailPage(run, isRunItemOutcome(filter) ? filter : null)
 }
 
-function pendingPage(screen: string, active: string): Page {
-	const placeholder = PENDING_SCREENS[screen]
-	return placeholder ? placeholderPage(placeholder, active) : notFoundPage('No encontrado', ROUTE.Home, 'Resumen')
-}
-
 async function handlePost(deps: AppDeps, req: IncomingMessage, res: ServerResponse, path: string): Promise<void> {
 	if (path === ROUTE.Import) return startRun(deps, req, res, RUN_KIND.Import)
 	if (path === ROUTE.UpdatePaid) return startRun(deps, req, res, RUN_KIND.UpdatePaid)
+	if (path === ROUTE.Settings) return saveSettings(deps, req, res)
+	if (path === ROUTE.TestConnection) return checkConnection(deps, req, res)
 	render(deps, res, notFoundPage('No encontrado', ROUTE.Home, 'Resumen'), undefined)
 }
 

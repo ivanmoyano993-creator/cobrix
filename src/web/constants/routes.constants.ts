@@ -3,6 +3,7 @@ export const ROUTE = {
 	Customers: '/clientes',
 	Sync: '/sincronizacion',
 	Settings: '/configuracion',
+	TestConnection: '/configuracion/probar',
 	Assignment: '/enunciado',
 	Stylesheet: '/app.css',
 	Import: '/sincronizacion/importar',
@@ -38,6 +39,7 @@ export const HTTP_STATUS = {
 	Ok: 200,
 	SeeOther: 303,
 	NotFound: 404,
+	Unprocessable: 422,
 	PayloadTooLarge: 413,
 	ServerError: 500,
 } as const
