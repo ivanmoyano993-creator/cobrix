@@ -34,6 +34,15 @@ describe('panel: Resumen, Sincronización y detalle de corrida', () => {
 		}
 	})
 
+	it('el Resumen distingue la fecha fijada del sandbox del día real en Caracas', async () => {
+		const { body } = await panel.get('/')
+		assert.match(body, /Fecha del sandbox/)
+		assert.match(body, /13 oct 2026/)
+		assert.doesNotMatch(body, /Fecha de hoy/)
+		const calendarDay = panel.cobrix.clock.calendarDay()
+		if (calendarDay !== '2026-10-13') assert.match(body, /fijada con SANDBOX_TODAY · hoy en Caracas: /)
+	})
+
 	it('simular importación lleva al detalle de la corrida y no importa nada', async () => {
 		const response = await panel.post('/sincronizacion/importar', { simular: '1' })
 		await panel.waitIdle()

@@ -24,4 +24,8 @@ export const INVOICE_DATES_NOTE = 'El vencimiento es el primer día del periodo 
 
 export const OVERDUE_ALERT_DAYS = 30
 
+export const SANDBOX_DATE_LABEL = 'Fecha del sandbox'
+
+export const SANDBOX_PINNED_NOTE = 'fijada con SANDBOX_TODAY · hoy en Caracas:'
+
 export const NO_ITEMS = 'Esta corrida no dejó filas: no había cuotas ni facturas que revisar.'
