@@ -154,4 +154,7 @@ export const OVERVIEW_SELECT = `
 		(SELECT COUNT(*) FROM contracts) AS contracts,
 		(SELECT COUNT(*) FROM invoices WHERE status = 'open') AS open_invoices,
 		(SELECT COUNT(*) FROM invoices WHERE status = 'paid') AS paid_invoices,
-		(SELECT COALESCE(SUM(balance_cents), 0) FROM invoices WHERE status = 'open') AS receivable_cents`
+		(SELECT COALESCE(SUM(balance_cents), 0) FROM invoices WHERE status = 'open') AS receivable_cents,
+		(SELECT run_counters.value FROM run_counters JOIN runs ON runs.id = run_counters.run_id
+			WHERE runs.kind = 'import' AND runs.status = 'completed' AND run_counters.name = 'contracts_total'
+			ORDER BY runs.id DESC LIMIT 1) AS provider_contracts`

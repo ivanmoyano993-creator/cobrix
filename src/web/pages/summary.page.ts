@@ -7,7 +7,7 @@ import { NO_RUNS } from '../constants/copy.constants.ts'
 import { HTTP_STATUS, ROUTE, SUMMARY_RUNS_LIMIT } from '../constants/routes.constants.ts'
 import { usd } from '../format.ts'
 import { html } from '../html.ts'
-import type { AppDeps, Page } from '../interfaces/web.interface.ts'
+import type { AppDeps, Page, Tile } from '../interfaces/web.interface.ts'
 
 export function summaryPage(deps: AppDeps, settings: Settings): Page {
 	const { queries } = deps.cobrix.persistence
@@ -23,7 +23,7 @@ export function summaryPage(deps: AppDeps, settings: Settings): Page {
 			${runningBanner(deps.cobrix.progress.current())}
 			${tiles([
 				{ label: 'Clientes importados', value: String(overview.customers) },
-				{ label: 'Contratos importados', value: String(overview.contracts) },
+				{ label: 'Contratos importados', value: String(overview.contracts), ...providerContractsHint(overview.providerContracts) },
 				{ label: 'Facturas abiertas', value: String(overview.openInvoices) },
 				{ label: 'Facturas pagadas', value: String(overview.paidInvoices) },
 				{ label: 'Por cobrar', value: usd(overview.receivableCents) },
@@ -40,4 +40,8 @@ export function summaryPage(deps: AppDeps, settings: Settings): Page {
 				${runs.length > 0 ? runsTable(runs) : emptyState({ title: NO_RUNS.title, text: NO_RUNS.text, action: null })}
 			</section>`,
 	}
+}
+
+function providerContractsHint(total: number | null): Pick<Tile, 'hint'> {
+	return total === null ? {} : { hint: `de ${total} en el administrador` }
 }
