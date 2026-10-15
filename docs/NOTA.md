@@ -30,6 +30,22 @@ Cómo levantarlo y probarlo: [`README.md`](../README.md).
 
 **Precarga del proveedor.** `npm start` completa el proveedor con el sandbox solo si nunca se configuró, para que se pueda importar de una. En producción arrancaría vacío.
 
+### Lo que el enunciado dejaba abierto
+
+- **Identificación:** los 6 a 12 dígitos se cuentan después de quitar los ceros a la izquierda.
+- **Dos cuotas del mismo periodo** en un contrato se tratan como respuesta contradictoria.
+- **Abono parcial:** no cambia el saldo en Cobrix. Lo exigen los números del §5 (1.235 − 280 = 955); si el abono bajara el saldo, darían 950.
+- **Saldo del ISP mayor que el de Cobrix:** respuesta inconsistente, la factura sigue abierta.
+- **Exonerada** (saldo 0 sin nada pagado): no es un pago y la factura sigue abierta con ese motivo.
+- **Factura que pagó la cuota:** la más reciente del libro con `id_factura` distinto de 0.
+- **Rango del libro de cuotas:** desde el vencimiento más viejo abierto del contrato hasta el fin del mes en curso.
+- **Cuota del mes en curso:** si no figura en el libro, se consulta el contrato. Solo en ese caso, para no hacer pedidos de más.
+- **Error HTTP o JSON inesperado en un contrato:** ese contrato queda fuera y la corrida sigue. Credenciales malas o la API caída hacen fallar la corrida.
+- **Topes por corrida:** desde la primera factura que excede un tope, esa y las siguientes quedan frenadas, en orden de contrato y periodo. Lo ya importado no cuenta para el tope.
+- **Cliente:** se crea solo si se le importa al menos una factura.
+- **Probar conexión:** usa lo escrito en el formulario sin guardarlo.
+- **Contratos en el Resumen:** muestro los dos números, «Contratos importados: 21 · de 27 en el administrador». Los 21 son los que gestiona Cobrix (los de clientes importados); los 27 salen del contador de la última importación. Los 6 que quedan fuera no se guardan porque sus titulares no pueden ser clientes (§5); su motivo está en el detalle de cada importación.
+
 ## Lo que dejé fuera
 
 - **Autenticación del panel.** Cualquiera con acceso a la URL lo opera.
@@ -37,7 +53,7 @@ Cómo levantarlo y probarlo: [`README.md`](../README.md).
 - **Cobros anulados después de marcar pagada.** Si el ISP anula un cobro cuando la factura ya figura pagada en Cobrix, la factura no se reabre: el §3.3 revisa solo las abiertas. Anular antes de actualizar sí funciona (caso de ELENA RUIZ en el §5).
 - **Reintentos con espera** ante errores transitorios, y concurrencia acotada al consultar contratos (hoy es uno por vez, a propósito).
 - **Rotación de la clave de cifrado.** El formato `v1:` lo deja preparado.
-- **Pruebas de navegador** (Playwright). Las del panel van por HTTP contra la API real, y la revisión visual la hice con capturas en Edge headless a 1440 px y 375 px.
+- **Pruebas de navegador automatizadas en el repo** (Playwright). Las del panel van por HTTP contra la API real. El QA en un navegador real (Edge controlado por CDP, a 1440 px y 375 px) lo corrí aparte, sobre un clon limpio.
 
 ## Con más tiempo
 
@@ -45,8 +61,17 @@ Cómo levantarlo y probarlo: [`README.md`](../README.md).
 - Alertas cuando falla la corrida automática (correo de cobranza).
 - Conciliación de cuotas que dejan de existir en el ISP.
 - Volver a verificar las pagadas recientes y reabrir las que el ISP anuló, con un evento en el historial.
-- Reintentos con espera y concurrencia acotada, con métricas por corrida.
+- Reintentos con espera y concurrencia acotada.
 - Exportar a CSV la tabla de clientes y el detalle de cada corrida.
+
+**Si el proyecto escala, la infraestructura** (la parte que más me apasiona):
+
+- **PostgreSQL en lugar de SQLite**, primero: es lo que permite correr varias réplicas. Con la arquitectura hexagonal es un adaptador nuevo detrás de los mismos puertos.
+- **Observabilidad:** trazas con OpenTelemetry por corrida y por contrato (cada pedido al ISP como un span), métricas en Prometheus y Grafana (duración de las corridas, facturas importadas y pagadas, errores y latencia del ISP) y logs estructurados.
+- **Alertas** sobre esas métricas: la corrida automática falló o no corrió, el ISP responde lento o con errores.
+- **Kubernetes**, con el programador como CronJob o con elección de líder, para que con varias réplicas la corrida diaria siga siendo una sola.
+- **GitOps con Argo CD:** el CD actualiza la versión de la imagen en un repositorio de manifiestos y Argo la despliega en cada entorno.
+- **AWS con Terraform:** EKS, RDS para PostgreSQL y Secrets Manager para la clave de cifrado.
 
 ## Punto diferencial
 
@@ -54,6 +79,7 @@ Cómo levantarlo y probarlo: [`README.md`](../README.md).
 - **Cada fila de una corrida explica su motivo** en palabras del operador, y el detalle se filtra por resultado.
 - **Días de atraso** del vencimiento más antiguo en la tabla de clientes, para priorizar la cobranza.
 - **El ciclo completo del §5 como prueba automática** contra la API real, incluidos los números que muestra el panel.
+- **Listo para desplegar**, aunque no se pedía: imagen Docker sin root con volumen y healthcheck, `docker compose up` para levantarlo, CI en Ubuntu y Windows que además construye la imagen y la prueba levantada, y CD que publica la imagen en GHCR y la despliega en un entorno `staging` (simulado).
 
 ## Cómo usé la IA
 
@@ -78,4 +104,5 @@ Trabajé con **Claude Code** en VS Code, por fases, cada una en su rama con pull
 - Un script de reemplazo rompió el escapado de una expresión regular (`/\s/` quedó como `/s/`). Lo detectó la prueba del correo de cobranza.
 - Una prueba que escribió dependía del día en que se corría (una aserción dentro de un `if`). La marcó la fase de verificación; ahora usa un reloj inyectado.
 - Haciendo QA contra el enunciado, el Resumen mostraba 21 contratos y la referencia dice 27. Ninguno estaba mal: 27 son los del administrador y 21 los que gestiona Cobrix. Ahora se ven los dos.
+- Un QA de punta a punta en un navegador real, sobre un clon limpio de `main`, encontró que cada página pedía un favicon que no existía y dejaba un error en la consola. En la misma ronda aparecieron 25 fallas falsas: un proceso de una corrida anterior seguía ocupando el puerto. Las descartamos verificando qué proceso tenía el puerto, en lugar de «arreglar» código que estaba bien.
 - La prueba que vino con el esqueleto fallaba en Windows (`URL.pathname` en lugar de `fileURLToPath`); quedó corregida en su propio PR.
