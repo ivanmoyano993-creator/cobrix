@@ -43,9 +43,19 @@ export interface CustomerFile {
 	readonly history: readonly HistoryEvent[]
 }
 
+export interface PageRequest {
+	readonly page: number
+	readonly size: number
+}
+
+export interface Paged<T> {
+	readonly items: readonly T[]
+	readonly total: number
+}
+
 export interface PanelQueries {
 	overview(): Overview
-	listCustomers(search: string): CustomerRow[]
+	listCustomers(search: string, request: PageRequest): Paged<CustomerRow>
 	getCustomerFile(customerId: string): CustomerFile | null
-	listRuns(limit: number): RunSummary[]
+	listRuns(request: PageRequest): Paged<RunSummary>
 }

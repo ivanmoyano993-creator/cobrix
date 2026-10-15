@@ -1,16 +1,18 @@
 import { today } from '../../shared/dates.ts'
 import type { CustomerRow } from '../../cobrix/domain/interfaces/queries.interface.ts'
+import { loadPage, pager } from '../components/pagination.ts'
 import { emptyState } from '../components/ui.ts'
 import { NO_CUSTOMERS, NO_MATCH_TEXT, OVERDUE_ALERT_DAYS } from '../constants/copy.constants.ts'
 import { PERSON_KIND_LABEL } from '../constants/labels.constants.ts'
-import { HTTP_STATUS, ROUTE, SEARCH_PARAM } from '../constants/routes.constants.ts'
+import { CUSTOMERS_PAGE_SIZE, HTTP_STATUS, ROUTE, SEARCH_PARAM } from '../constants/routes.constants.ts'
 import { date, daysBetween, formatDocument, plural, usd } from '../format.ts'
 import { html, type Raw } from '../html.ts'
 import type { AppDeps, Page } from '../interfaces/web.interface.ts'
 
-export function customersPage(deps: AppDeps, search: string): Page {
+export function customersPage(deps: AppDeps, search: string, page: number): Page {
 	const term = search.trim()
-	const rows = deps.cobrix.persistence.queries.listCustomers(term)
+	const view = loadPage(page, CUSTOMERS_PAGE_SIZE, request => deps.cobrix.persistence.queries.listCustomers(term, request))
+	const rows = view.items
 	return {
 		status: HTTP_STATUS.Ok,
 		title: 'Clientes',
@@ -21,8 +23,9 @@ export function customersPage(deps: AppDeps, search: string): Page {
 				${searchForm(term)}
 			</div>
 			<section class="card">
-				<header><h2>${term === '' ? plural(rows.length, 'cliente', 'clientes') : plural(rows.length, 'resultado', 'resultados')}</h2>${term === '' ? '' : html`<a href="${ROUTE.Customers}">Ver todos</a>`}</header>
+				<header><h2>${term === '' ? plural(view.total, 'cliente', 'clientes') : plural(view.total, 'resultado', 'resultados')}</h2>${term === '' ? '' : html`<a href="${ROUTE.Customers}">Ver todos</a>`}</header>
 				${rows.length > 0 ? customersTable(rows) : emptyResult(term)}
+				${pager(view, { path: ROUTE.Customers, params: { [SEARCH_PARAM]: term } })}
 			</section>`,
 	}
 }

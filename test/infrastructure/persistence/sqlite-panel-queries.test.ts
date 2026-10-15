@@ -9,6 +9,8 @@ import { createTestPersistence, type TestPersistence } from '../../support/test-
 
 const AT = '2026-10-13T14:00:00.000Z'
 
+const ALL = { page: 1, size: 50 }
+
 const ANA: Holder = { documentId: 'V12345678', documentType: 'V', personKind: 'natural', name: 'ANA PEREZ', email: 'ANA@EXAMPLE.COM', phone: '0412' }
 const FARO: Holder = { documentId: 'J401234567', documentType: 'J', personKind: 'legal', name: 'COMERCIAL EL FARO, C.A.', email: 'FARO@EXAMPLE.COM', phone: '0212' }
 const ELENA: Holder = { documentId: '9000123', documentType: null, personKind: 'natural', name: 'ELENA RUIZ', email: 'ELENA@EXAMPLE.COM', phone: '0414' }
@@ -68,7 +70,7 @@ describe('createSqlitePanelQueries', () => {
 	})
 
 	it('lista los clientes con contratos, facturas, deuda y vencimiento más antiguo, de mayor a menor deuda', () => {
-		const rows = context.persistence.queries.listCustomers('')
+		const rows = context.persistence.queries.listCustomers('', ALL).items
 		assert.deepEqual(rows.map(row => row.name), ['COMERCIAL EL FARO, C.A.', 'ANA PEREZ', 'ELENA RUIZ'])
 		assert.deepEqual(rows[1], {
 			id: 'V12345678',
@@ -86,13 +88,26 @@ describe('createSqlitePanelQueries', () => {
 	})
 
 	it('busca por nombre, cédula o RIF, con o sin separadores', () => {
-		const search = (term: string) => context.persistence.queries.listCustomers(term).map(row => row.id)
+		const search = (term: string) => context.persistence.queries.listCustomers(term, ALL).items.map(row => row.id)
 		assert.deepEqual(search('faro'), ['J401234567'])
 		assert.deepEqual(search('J-40123456-7'), ['J401234567'])
 		assert.deepEqual(search('12345678'), ['V12345678'])
 		assert.deepEqual(search('09000123'), ['9000123'])
 		assert.deepEqual(search('nadie'), [])
+		assert.deepEqual(search('45678'), ['V12345678'])
+		assert.deepEqual(search('2345'), ['J401234567', 'V12345678'])
+		assert.deepEqual(search('v-1234'), ['V12345678'])
+		assert.deepEqual(search('4012'), ['J401234567'])
 		assert.deepEqual(search('%'), [])
+	})
+
+	it('pagina los clientes y cuenta el total de lo que coincide', () => {
+		const { queries } = context.persistence
+		const names = (page: number, search = '') => queries.listCustomers(search, { page, size: 2 })
+		assert.deepEqual(names(1).items.map(row => row.name), ['COMERCIAL EL FARO, C.A.', 'ANA PEREZ'])
+		assert.deepEqual(names(2).items.map(row => row.name), ['ELENA RUIZ'])
+		assert.equal(names(2).total, 3)
+		assert.equal(names(1, 'ana').total, 1)
 	})
 
 	it('arma el expediente con datos, contratos, facturas e historial', () => {
@@ -111,10 +126,10 @@ describe('createSqlitePanelQueries', () => {
 		const first = runs.start({ kind: RUN_KIND.Import, dryRun: true, trigger: RUN_TRIGGER.Manual, startedAt: AT })
 		runs.finish(first, { status: RUN_STATUS.Completed, finishedAt: AT, summary: '42 facturas se importarían', counters: {}, error: null })
 		const second = runs.start({ kind: RUN_KIND.UpdatePaid, dryRun: false, trigger: RUN_TRIGGER.Scheduled, startedAt: AT })
-		assert.deepEqual(queries.listRuns(10).map(run => [run.id, run.kind, run.status]), [
+		assert.deepEqual(queries.listRuns({ page: 1, size: 10 }).items.map(run => [run.id, run.kind, run.status]), [
 			[second, RUN_KIND.UpdatePaid, RUN_STATUS.Running],
 			[first, RUN_KIND.Import, RUN_STATUS.Completed],
 		])
-		assert.equal(queries.listRuns(1).length, 1)
+		assert.deepEqual(queries.listRuns({ page: 2, size: 1 }), { items: queries.listRuns({ page: 1, size: 10 }).items.slice(1), total: 2 })
 	})
 })

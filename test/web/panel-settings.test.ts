@@ -50,6 +50,14 @@ describe('panel: Configuración', () => {
 		assert.match(body, /name="importableStatuses" value="ACTIVO" checked/)
 	})
 
+	it('la configuración guardada empieza sin cambios pendientes y aclara desde cuándo rigen las reglas', async () => {
+		const { body } = await panel.get('/configuracion')
+		assert.match(body, /<form class="settings"[^>]*data-dirty="false"/)
+		assert.match(body, /data-save/)
+		assert.match(body, /Tienes cambios sin guardar/)
+		assert.match(body, /desde la próxima importación/)
+	})
+
 	it('probar conexión inicia sesión con lo escrito y dice cuántos contratos hay, sin guardar', async () => {
 		const response = await submit('/configuracion/probar', form({ providerUrl: `${panel.apiBase}/api/v1`, companyName: 'Sin guardar' }))
 		assert.equal(response.status, 200)
@@ -70,6 +78,7 @@ describe('panel: Configuración', () => {
 		assert.match(response.body, /Revisa los campos marcados/)
 		assert.match(response.body, /entre 0 y 60/)
 		assert.match(response.body, /value="Escrito"/)
+		assert.match(response.body, /<form class="settings"[^>]*data-dirty="true"/)
 		assert.notEqual(panel.cobrix.persistence.settings.get().company.name, 'Escrito')
 	})
 

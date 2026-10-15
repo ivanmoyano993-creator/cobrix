@@ -4,11 +4,14 @@ import { DOCUMENT_TYPES, PERSON_KINDS } from '../../../domain/constants/document
 import { CONTRACT_STATUSES } from '../../../domain/constants/import.constants.ts'
 import { normalizeDocument } from '../../../domain/document.ts'
 import type { ContractInfo } from '../../../domain/interfaces/import.interface.ts'
-import type { CustomerFile, CustomerProfile, CustomerRow, Overview, PanelQueries } from '../../../domain/interfaces/queries.interface.ts'
+import type { CustomerFile, CustomerProfile, CustomerRow, Overview, PageRequest, Paged, PanelQueries } from '../../../domain/interfaces/queries.interface.ts'
 import type { RunSummary } from '../../../domain/interfaces/run.interface.ts'
 import {
 	CUSTOMER_ROWS_ORDER,
 	CUSTOMER_ROWS_SELECT,
+	CUSTOMER_SEARCH_WHERE,
+	DOCUMENT_FRAGMENT,
+	DOCUMENT_SEPARATORS,
 	INVOICE_SELECT,
 	LIKE_ESCAPE,
 	LIKE_SPECIAL_CHARACTERS,
@@ -23,9 +26,9 @@ import { integer, nullableInteger, nullableOneOf, nullableText, oneOf, text } fr
 export function createSqlitePanelQueries(db: DatabaseSync): PanelQueries {
 	return {
 		overview: () => overview(db),
-		listCustomers: search => listCustomers(db, search),
+		listCustomers: (search, request) => listCustomers(db, search, request),
 		getCustomerFile: customerId => getCustomerFile(db, customerId),
-		listRuns: limit => listRuns(db, limit),
+		listRuns: request => listRuns(db, request),
 	}
 }
 
@@ -42,15 +45,25 @@ function overview(db: DatabaseSync): Overview {
 	}
 }
 
-function listCustomers(db: DatabaseSync, search: string): CustomerRow[] {
+function listCustomers(db: DatabaseSync, search: string, request: PageRequest): Paged<CustomerRow> {
 	const term = search.trim()
-	if (term === '') return db.prepare(`${CUSTOMER_ROWS_SELECT} ${CUSTOMER_ROWS_ORDER}`).all().map(toCustomerRow)
-	const documentId = normalizeDocument(term)?.id ?? null
-	return db.prepare(`
-		${CUSTOMER_ROWS_SELECT}
-		WHERE (? IS NOT NULL AND customers.id LIKE ? ESCAPE '${LIKE_ESCAPE}') OR UPPER(customers.name) LIKE ? ESCAPE '${LIKE_ESCAPE}'
-		${CUSTOMER_ROWS_ORDER}
-	`).all(documentId, containing(documentId ?? ''), containing(term.toUpperCase())).map(toCustomerRow)
+	const where = term === '' ? '' : CUSTOMER_SEARCH_WHERE
+	const documentId = term === '' ? null : documentTerm(term)
+	const params = term === '' ? [] : [documentId, containing(documentId ?? ''), containing(term.toUpperCase())]
+	const count = db.prepare(`SELECT COUNT(*) AS total FROM customers ${where}`).get(...params)
+	const rows = db.prepare(`${CUSTOMER_ROWS_SELECT} ${where} ${CUSTOMER_ROWS_ORDER} LIMIT ? OFFSET ?`).all(...params, request.size, offset(request))
+	return { items: rows.map(toCustomerRow), total: count === undefined ? 0 : integer(count, 'total') }
+}
+
+function documentTerm(term: string): string | null {
+	const normalized = normalizeDocument(term)?.id
+	if (normalized !== undefined) return normalized
+	const compact = term.toUpperCase().replaceAll(DOCUMENT_SEPARATORS, '')
+	return DOCUMENT_FRAGMENT.test(compact) ? compact : null
+}
+
+function offset(request: PageRequest): number {
+	return (request.page - 1) * request.size
 }
 
 function getCustomerFile(db: DatabaseSync, customerId: string): CustomerFile | null {
@@ -64,8 +77,10 @@ function getCustomerFile(db: DatabaseSync, customerId: string): CustomerFile | n
 	}
 }
 
-function listRuns(db: DatabaseSync, limit: number): RunSummary[] {
-	return db.prepare('SELECT * FROM runs ORDER BY id DESC LIMIT ?').all(limit).map(toRunSummary)
+function listRuns(db: DatabaseSync, request: PageRequest): Paged<RunSummary> {
+	const count = db.prepare('SELECT COUNT(*) AS total FROM runs').get()
+	const rows = db.prepare('SELECT * FROM runs ORDER BY id DESC LIMIT ? OFFSET ?').all(request.size, offset(request))
+	return { items: rows.map(toRunSummary), total: count === undefined ? 0 : integer(count, 'total') }
 }
 
 function containing(term: string): string {

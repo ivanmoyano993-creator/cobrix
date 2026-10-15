@@ -1,13 +1,15 @@
+import { loadPage, pager } from '../components/pagination.ts'
 import { importActions, updatePaidActions } from '../components/run-actions.ts'
 import { runningBanner } from '../components/progress.ts'
 import { emptyState, runsTable } from '../components/ui.ts'
 import { DRY_RUN_NOTE, NO_RUNS } from '../constants/copy.constants.ts'
-import { HISTORY_RUNS_LIMIT, HTTP_STATUS, ROUTE } from '../constants/routes.constants.ts'
+import { HTTP_STATUS, ROUTE, RUNS_PAGE_SIZE } from '../constants/routes.constants.ts'
+import { plural } from '../format.ts'
 import { html } from '../html.ts'
 import type { AppDeps, Page } from '../interfaces/web.interface.ts'
 
-export function syncPage(deps: AppDeps): Page {
-	const runs = deps.cobrix.persistence.queries.listRuns(HISTORY_RUNS_LIMIT)
+export function syncPage(deps: AppDeps, page: number): Page {
+	const view = loadPage(page, RUNS_PAGE_SIZE, request => deps.cobrix.persistence.queries.listRuns(request))
 	const running = deps.cobrix.isRunning()
 	return {
 		status: HTTP_STATUS.Ok,
@@ -27,8 +29,9 @@ export function syncPage(deps: AppDeps): Page {
 				</section>
 			</div>
 			<section class="card">
-				<header><h2>Historial de corridas</h2><span class="muted">Las ${HISTORY_RUNS_LIMIT} más recientes</span></header>
-				${runs.length > 0 ? runsTable(runs) : emptyState({ title: NO_RUNS.title, text: NO_RUNS.text, action: null })}
+				<header><h2>Historial de corridas</h2><span class="muted">${plural(view.total, 'corrida', 'corridas')}, la más reciente primero</span></header>
+				${view.items.length > 0 ? runsTable(view.items) : emptyState({ title: NO_RUNS.title, text: NO_RUNS.text, action: null })}
+				${pager(view, { path: ROUTE.Sync, params: {} })}
 			</section>`,
 	}
 }

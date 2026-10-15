@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { after, before, describe, it } from 'node:test'
 
+import { RUN_KIND, RUN_STATUS, RUN_TRIGGER } from '../../src/cobrix/domain/constants/run.constants.ts'
 import { startPanel, type PanelHarness } from '../support/panel-harness.ts'
 
 describe('panel: Resumen, Sincronización y detalle de corrida', () => {
@@ -75,6 +76,26 @@ describe('panel: Resumen, Sincronización y detalle de corrida', () => {
 		assert.doesNotMatch(body, /<td[^>]*>ANA PEREZ<\/td>/)
 	})
 
+	it('el detalle pagina de a 25 filas y conserva el filtro', async () => {
+		const runs = await panel.get('/sincronizacion')
+		const id = /\/sincronizacion\/corridas\/(\d+)/.exec(runs.body)?.[1]
+		const all = await panel.get(`/sincronizacion/corridas/${id}`)
+		assert.match(all.body, /1–25 de \d+/)
+		const imported = await panel.get(`/sincronizacion/corridas/${id}?resultado=imported&pagina=2`)
+		assert.match(imported.body, /26–42 de 42/)
+		assert.match(imported.body, new RegExp(`href="/sincronizacion/corridas/${id}\\?resultado=imported"[^>]*>← Anterior`))
+	})
+
+	it('los contadores hablan en palabras del operador, agrupados aparte', async () => {
+		const runs = await panel.get('/sincronizacion')
+		const id = /\/sincronizacion\/corridas\/(\d+)/.exec(runs.body)?.[1]
+		const { body } = await panel.get(`/sincronizacion/corridas/${id}`)
+		assert.match(body, /<details class="card">/)
+		assert.match(body, /Cuotas con moneda incoherente/)
+		assert.match(body, /Contratos con moneda incoherente/)
+		assert.doesNotMatch(body, /contracts_total|imported_amount_cents/)
+	})
+
 	it('actualizar pagadas sin pagos nuevos deja todo abierto', async () => {
 		const response = await panel.post('/sincronizacion/actualizar-pagadas')
 		await panel.waitIdle()
@@ -109,5 +130,19 @@ describe('panel: Resumen, Sincronización y detalle de corrida', () => {
 		const { status, body } = await panel.get('/sincronizacion/corridas/9999')
 		assert.equal(status, 404)
 		assert.match(body, /Sincronización/)
+	})
+
+	it('el historial pagina de a 10 corridas', async () => {
+		const { runs } = panel.cobrix.persistence
+		for (let index = 0; index < 12; index++) {
+			const id = runs.start({ kind: RUN_KIND.Import, dryRun: true, trigger: RUN_TRIGGER.Manual, startedAt: '2026-10-13T12:00:00.000Z' })
+			runs.finish(id, { status: RUN_STATUS.Completed, finishedAt: '2026-10-13T12:00:01.000Z', summary: '', counters: {}, error: null })
+		}
+		const first = await panel.get('/sincronizacion')
+		const total = /1–10 de (\d+)/.exec(first.body)?.[1]
+		assert.ok(Number(total) > 12)
+		assert.match(first.body, /href="\/sincronizacion\?pagina=2"/)
+		const second = await panel.get('/sincronizacion?pagina=2')
+		assert.match(second.body, new RegExp(`11–${Math.min(20, Number(total))} de ${total}`))
 	})
 })

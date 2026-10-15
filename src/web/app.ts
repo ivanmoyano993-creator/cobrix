@@ -29,6 +29,7 @@ import type { AppDeps, Flash, Page } from './interfaces/web.interface.ts'
 import { isRunItemOutcome } from './labels.ts'
 import { layout } from './layout.ts'
 import { customerFilePage } from './pages/customer-file.page.ts'
+import { requestedPage } from './components/pagination.ts'
 import { customersPage } from './pages/customers.page.ts'
 import { assignmentPage, notFoundPage } from './pages/static.page.ts'
 import { runDetailPage } from './pages/run-detail.page.ts'
@@ -57,9 +58,9 @@ async function route(deps: AppDeps, req: IncomingMessage, res: ServerResponse): 
 
 function getPage(deps: AppDeps, path: string, url: URL): Page {
 	if (path === ROUTE.Home) return summaryPage(deps, deps.cobrix.persistence.settings.get())
-	if (path === ROUTE.Sync) return syncPage(deps)
+	if (path === ROUTE.Sync) return syncPage(deps, requestedPage(url))
 	if (path === ROUTE.Assignment) return assignmentPage(deps.assignmentPath)
-	if (path === ROUTE.Customers) return customersPage(deps, url.searchParams.get(SEARCH_PARAM) ?? '')
+	if (path === ROUTE.Customers) return customersPage(deps, url.searchParams.get(SEARCH_PARAM) ?? '', requestedPage(url))
 	const runId = RUN_DETAIL_PATTERN.exec(path)?.[1]
 	if (runId !== undefined) return runPage(deps, Number(runId), url)
 	const customerId = CUSTOMER_FILE_PATTERN.exec(path)?.[1]
@@ -70,7 +71,7 @@ function getPage(deps: AppDeps, path: string, url: URL): Page {
 
 function currentSettingsPage(deps: AppDeps): Page {
 	const settings = deps.cobrix.currentSettings()
-	return settingsPage({ values: settingsToInput(settings), errors: {}, notice: null, status: HTTP_STATUS.Ok, hasPassword: settings.provider.password !== '' })
+	return settingsPage({ values: settingsToInput(settings), errors: {}, notice: null, status: HTTP_STATUS.Ok, hasPassword: settings.provider.password !== '', dirty: false })
 }
 
 async function saveSettings(deps: AppDeps, req: IncomingMessage, res: ServerResponse): Promise<void> {
@@ -78,7 +79,7 @@ async function saveSettings(deps: AppDeps, req: IncomingMessage, res: ServerResp
 	const result = deps.cobrix.updateSettings(input)
 	if (result.ok) return redirect(res, withFlash(ROUTE.Settings, { tone: TONE.Ok, text: SETTINGS_SAVED }))
 	const hasPassword = deps.cobrix.currentSettings().provider.password !== ''
-	render(deps, res, settingsPage({ values: input, errors: result.errors, notice: null, status: HTTP_STATUS.Unprocessable, hasPassword }), undefined)
+	render(deps, res, settingsPage({ values: input, errors: result.errors, notice: null, status: HTTP_STATUS.Unprocessable, hasPassword, dirty: true }), undefined)
 }
 
 async function checkConnection(deps: AppDeps, req: IncomingMessage, res: ServerResponse): Promise<void> {
@@ -86,7 +87,7 @@ async function checkConnection(deps: AppDeps, req: IncomingMessage, res: ServerR
 	const check = await deps.cobrix.testConnection(input)
 	const hasPassword = deps.cobrix.currentSettings().provider.password !== ''
 	const errors = 'errors' in check ? check.errors : {}
-	render(deps, res, settingsPage({ values: input, errors, notice: connectionNotice(check), status: HTTP_STATUS.Ok, hasPassword }), undefined)
+	render(deps, res, settingsPage({ values: input, errors, notice: connectionNotice(check), status: HTTP_STATUS.Ok, hasPassword, dirty: true }), undefined)
 }
 
 function customerPage(deps: AppDeps, customerId: string): Page {
@@ -99,7 +100,7 @@ function runPage(deps: AppDeps, runId: number, url: URL): Page {
 	const run = deps.cobrix.persistence.runs.get(runId)
 	if (run === null) return notFoundPage(`La corrida #${runId} no existe`, ROUTE.Sync, 'Sincronización')
 	const filter = url.searchParams.get(OUTCOME_FILTER_PARAM) ?? ''
-	return runDetailPage(run, isRunItemOutcome(filter) ? filter : null, deps.cobrix.progress.snapshot(runId))
+	return runDetailPage(run, isRunItemOutcome(filter) ? filter : null, requestedPage(url), deps.cobrix.progress.snapshot(runId))
 }
 
 async function handlePost(deps: AppDeps, req: IncomingMessage, res: ServerResponse, path: string): Promise<void> {

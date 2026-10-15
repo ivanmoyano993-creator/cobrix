@@ -1,4 +1,4 @@
-import { CONFIRM_SCRIPT, PROGRESS_SCRIPT } from './constants/scripts.constants.ts'
+import { CONFIRM_SCRIPT, PROGRESS_SCRIPT, SEARCH_SCRIPT, SETTINGS_SCRIPT } from './constants/scripts.constants.ts'
 import { APP_NAME, APP_TAGLINE, NAV } from './constants/ui.constants.ts'
 import { esc, html, type Raw } from './html.ts'
 import type { LayoutInput } from './interfaces/web.interface.ts'
@@ -32,7 +32,7 @@ export function layout(input: LayoutInput): string {
 		<div class="actions"><button class="btn" value="cancel">Cancelar</button><button class="btn primary" value="ok">Confirmar</button></div>
 	</form>
 </dialog>
-<script>${CONFIRM_SCRIPT}${PROGRESS_SCRIPT}</script>
+<script>${CONFIRM_SCRIPT}${PROGRESS_SCRIPT}${SEARCH_SCRIPT}${SETTINGS_SCRIPT}</script>
 </body>
 </html>`
 }

@@ -1,4 +1,5 @@
 import type { SettingsInput } from '../../cobrix/application/interfaces/settings.interface.ts'
+import type { Paged } from '../../cobrix/domain/interfaces/queries.interface.ts'
 import type { SettingsErrors } from '../../cobrix/application/types/settings.types.ts'
 import type { Cobrix } from '../../cobrix/infrastructure/interfaces/bootstrap.interface.ts'
 import type { Raw } from '../html.ts'
@@ -77,4 +78,15 @@ export interface SettingsPageState {
 	readonly notice: Flash | null
 	readonly status: number
 	readonly hasPassword: boolean
+	readonly dirty: boolean
+}
+
+export interface PageView<T> extends Paged<T> {
+	readonly page: number
+	readonly size: number
+}
+
+export interface PagerLink {
+	readonly path: string
+	readonly params: Readonly<Record<string, string>>
 }

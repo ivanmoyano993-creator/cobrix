@@ -191,7 +191,7 @@ describe('criterios de aceptación (ENUNCIADO §5) contra la API simulada', () =
 			assert.equal(overview.openInvoices, 34)
 			assert.equal(overview.paidInvoices, 8)
 			assert.equal(overview.receivableCents, 95_500)
-			assert.equal(persistence.queries.listCustomers('').length, 20)
+			assert.equal(persistence.queries.listCustomers('', { page: 1, size: 50 }).total, 20)
 			const luis = persistence.queries.getCustomerFile('V9876543')
 			assert.equal(luis?.contracts.length, 2)
 		})
