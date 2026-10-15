@@ -15,6 +15,13 @@ describe('panel: Resumen, Sincronización y detalle de corrida', () => {
 		await panel.close()
 	})
 
+	it('cada página declara su ícono, así el navegador no pide /favicon.ico', async () => {
+		for (const path of ['/', '/clientes', '/sincronizacion', '/configuracion', '/no-existe']) {
+			const { body } = await panel.get(path)
+			assert.match(body, /<link rel="icon" type="image\/svg\+xml" href="data:image\/svg\+xml,/, path)
+		}
+	})
+
 	it('el Resumen vacío explica qué hacer y muestra el proveedor configurado', async () => {
 		const { status, body } = await panel.get('/')
 		assert.equal(status, 200)

@@ -1,5 +1,5 @@
 import { CONFIRM_SCRIPT, PROGRESS_SCRIPT, SEARCH_SCRIPT, SETTINGS_SCRIPT } from './constants/scripts.constants.ts'
-import { APP_NAME, APP_TAGLINE, NAV } from './constants/ui.constants.ts'
+import { APP_NAME, APP_TAGLINE, FAVICON, NAV } from './constants/ui.constants.ts'
 import { esc, html, type Raw } from './html.ts'
 import type { LayoutInput } from './interfaces/web.interface.ts'
 import type { Tone } from './types/web.types.ts'
@@ -11,6 +11,7 @@ export function layout(input: LayoutInput): string {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(input.title)} · ${APP_NAME}</title>
+<link rel="icon" type="image/svg+xml" href="${FAVICON}">
 <link rel="stylesheet" href="/app.css">
 </head>
 <body>
