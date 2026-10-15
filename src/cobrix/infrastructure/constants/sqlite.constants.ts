@@ -132,6 +132,12 @@ export const LIKE_SPECIAL_CHARACTERS = /[\\%_]/g
 
 export const LIKE_ESCAPE = '\\'
 
+export const DOCUMENT_SEPARATORS = /[\s.-]/g
+
+export const DOCUMENT_FRAGMENT = /^[A-Z]?\d+$/
+
+export const CUSTOMER_SEARCH_WHERE = `WHERE (? IS NOT NULL AND customers.id LIKE ? ESCAPE '${LIKE_ESCAPE}') OR UPPER(customers.name) LIKE ? ESCAPE '${LIKE_ESCAPE}'`
+
 export const CUSTOMER_ROWS_SELECT = `
 	SELECT
 		customers.id,

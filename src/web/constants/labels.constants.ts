@@ -93,14 +93,14 @@ export const OUTCOME_COUNTER_LABEL: Readonly<Record<RunItemOutcome, string>> = {
 	[RUN_ITEM_OUTCOME.Imported]: 'Importadas',
 	[RUN_ITEM_OUTCOME.AlreadyImported]: 'Ya importadas',
 	[RUN_ITEM_OUTCOME.HeldByCap]: 'Frenadas por tope',
-	[RUN_ITEM_OUTCOME.ProviderError]: 'Con error del ISP',
-	[CONTRACT_REJECTION.InconsistentResponse]: 'Con respuesta inconsistente',
-	[CONTRACT_REJECTION.UnknownStatus]: 'Con estado desconocido',
-	[CONTRACT_REJECTION.ExcludedStatus]: 'Excluidas por estado',
-	[CONTRACT_REJECTION.InvalidDocument]: 'Con documento inválido',
-	[CONTRACT_REJECTION.ExcludedDocumentType]: 'Excluidas por documento',
-	[CONTRACT_REJECTION.CurrencyNotUsd]: 'Fuera de USD',
-	[CONTRACT_REJECTION.IncoherentCurrency]: 'Con moneda incoherente',
+	[RUN_ITEM_OUTCOME.ProviderError]: 'Cuotas con error del ISP',
+	[CONTRACT_REJECTION.InconsistentResponse]: 'Cuotas con respuesta inconsistente',
+	[CONTRACT_REJECTION.UnknownStatus]: 'Cuotas con estado desconocido',
+	[CONTRACT_REJECTION.ExcludedStatus]: 'Cuotas excluidas por estado',
+	[CONTRACT_REJECTION.InvalidDocument]: 'Cuotas con documento inválido',
+	[CONTRACT_REJECTION.ExcludedDocumentType]: 'Cuotas excluidas por documento',
+	[CONTRACT_REJECTION.CurrencyNotUsd]: 'Cuotas fuera de USD',
+	[CONTRACT_REJECTION.IncoherentCurrency]: 'Cuotas con moneda incoherente',
 	[INSTALLMENT_EXCLUSION.ResidualBalance]: 'Saldo residual',
 	[INSTALLMENT_EXCLUSION.FutureInstallment]: 'Cuotas futuras',
 	[INSTALLMENT_EXCLUSION.OutsideWindow]: 'Fuera de la ventana',
@@ -171,7 +171,7 @@ export const HISTORY_EVENT_LABEL: Readonly<Record<HistoryEventKind, string>> = {
 	[HISTORY_EVENT.InvoicePaid]: 'Pagada en el ISP',
 }
 
-export const COUNTERS_TITLE = 'Contadores'
+export const COUNTERS_TITLE = 'Todos los contadores'
 
 export const NOT_CONFIGURED = 'Sin configurar'
 

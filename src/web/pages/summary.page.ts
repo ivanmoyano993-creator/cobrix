@@ -4,7 +4,7 @@ import { actionsCard } from '../components/run-actions.ts'
 import { runningBanner } from '../components/progress.ts'
 import { emptyState, runsTable, tiles } from '../components/ui.ts'
 import { NO_RUNS } from '../constants/copy.constants.ts'
-import { HTTP_STATUS, ROUTE, SUMMARY_RUNS_LIMIT } from '../constants/routes.constants.ts'
+import { FIRST_PAGE, HTTP_STATUS, ROUTE, SUMMARY_RUNS_LIMIT } from '../constants/routes.constants.ts'
 import { usd } from '../format.ts'
 import { html } from '../html.ts'
 import type { AppDeps, Page, Tile } from '../interfaces/web.interface.ts'
@@ -12,7 +12,7 @@ import type { AppDeps, Page, Tile } from '../interfaces/web.interface.ts'
 export function summaryPage(deps: AppDeps, settings: Settings): Page {
 	const { queries } = deps.cobrix.persistence
 	const overview = queries.overview()
-	const runs = queries.listRuns(SUMMARY_RUNS_LIMIT)
+	const runs = queries.listRuns({ page: FIRST_PAGE, size: SUMMARY_RUNS_LIMIT }).items
 	const running = deps.cobrix.isRunning()
 	return {
 		status: HTTP_STATUS.Ok,

@@ -6,6 +6,10 @@ import { startPanel, type PanelHarness } from '../support/panel-harness.ts'
 
 const MANUAL = { dryRun: false, trigger: RUN_TRIGGER.Manual }
 
+function customerLinks(body: string): number | undefined {
+	return body.match(/href="\/clientes\/[^"]+"/g)?.length
+}
+
 describe('panel: Clientes vacío', () => {
 	let panel: PanelHarness
 
@@ -37,13 +41,37 @@ describe('panel: Clientes y expediente', () => {
 		await panel.close()
 	})
 
-	it('lista los 20 clientes con tipo, deuda y vencimiento más antiguo', async () => {
+	it('lista los clientes con tipo, deuda y vencimiento más antiguo', async () => {
 		const { body } = await panel.get('/clientes')
-		assert.equal(body.match(/href="\/clientes\/[^"]+"/g)?.length, 20)
+		assert.equal(customerLinks(body), 10)
+		assert.match(body, /20 clientes/)
 		assert.match(body, /COMERCIAL EL FARO, C\.A\./)
 		assert.match(body, /Jurídica/)
 		assert.match(body, /USD 120,00/)
 		assert.match(body, /días de atraso/)
+	})
+
+	it('pagina de a 10 clientes, y una página fuera de rango muestra la última', async () => {
+		const first = await panel.get('/clientes')
+		assert.match(first.body, /1–10 de 20/)
+		assert.match(first.body, /href="\/clientes\?pagina=2"/)
+		const second = await panel.get('/clientes?pagina=2')
+		assert.equal(customerLinks(second.body), 10)
+		assert.match(second.body, /11–20 de 20/)
+		assert.match(second.body, /href="\/clientes"[^>]*>← Anterior/)
+		const beyond = await panel.get('/clientes?pagina=99')
+		assert.match(beyond.body, /11–20 de 20/)
+	})
+
+	it('la paginación conserva la búsqueda', async () => {
+		const { body } = await panel.get('/clientes?q=a')
+		assert.match(body, /href="\/clientes\?q=a&amp;pagina=2"/)
+	})
+
+	it('busca por parte de la cédula o el RIF', async () => {
+		const { body } = await panel.get('/clientes?q=9876')
+		assert.equal(customerLinks(body), 1)
+		assert.match(body, /LUIS GOMEZ/)
 	})
 
 	it('busca por nombre, cédula o RIF y dice cuando no hay coincidencias', async () => {

@@ -14,6 +14,7 @@ import {
 	RECENT_HINT,
 	SETTINGS_INVALID,
 	STATUS_HINT,
+	UNSAVED_CHANGES,
 	WINDOW_HINT,
 } from '../constants/settings-form.constants.ts'
 import { TONE } from '../constants/ui.constants.ts'
@@ -31,7 +32,7 @@ export function settingsPage(state: SettingsPageState): Page {
 			<div class="head"><div><h1>Configuración</h1><p>Datos de la empresa, el acceso al administrador de facturas y las reglas de cada corrida.</p></div></div>
 			${hasErrors ? html`<div class="alert" role="alert"><strong>${SETTINGS_INVALID}</strong></div>` : ''}
 			${state.notice ? html`<div class="flash ${state.notice.tone}" role="status">${state.notice.text}</div>` : ''}
-			<form class="settings" method="post" action="${ROUTE.Settings}" novalidate>
+			<form class="settings" method="post" action="${ROUTE.Settings}" novalidate data-dirty="${String(state.dirty)}">
 				<div class="cards">
 					<section class="card">
 						<header><h2>Empresa</h2></header>
@@ -52,7 +53,7 @@ export function settingsPage(state: SettingsPageState): Page {
 					</section>
 				</div>
 				<section class="card">
-					<header><div><h2>Importación</h2><p>Qué cuotas se convierten en facturas de Cobrix.</p></div></header>
+					<header><div><h2>Importación</h2><p>Qué cuotas se convierten en facturas de Cobrix. Los cambios rigen desde la próxima importación.</p></div></header>
 					<div class="body grid2">
 						${checkboxGroup('importableStatuses', 'Estados de contrato que se importan', statusChoices(), values.importableStatuses, errors.importableStatuses, STATUS_HINT)}
 						${checkboxGroup('excludedDocumentTypes', 'Excluir titulares por tipo de documento', documentChoices(), values.excludedDocumentTypes, errors.excludedDocumentTypes, 'Las cuotas de estos titulares no se importan.')}
@@ -70,7 +71,11 @@ export function settingsPage(state: SettingsPageState): Page {
 						${field('autoRunTime', 'Hora (America/Caracas)', values.autoRunTime, errors.autoRunTime, { type: 'time' })}
 					</div>
 				</section>
-				<div class="actions sticky-actions"><button class="btn primary" type="submit">Guardar configuración</button><a class="btn" href="${ROUTE.Settings}">Descartar cambios</a></div>
+				<div class="actions sticky-actions">
+					<button class="btn primary" type="submit" data-save>Guardar configuración</button>
+					<a class="btn" href="${ROUTE.Settings}" data-discard>Descartar cambios</a>
+					<small class="muted" data-dirty-note${state.dirty ? '' : ' hidden'}>${UNSAVED_CHANGES}</small>
+				</div>
 			</form>`,
 	}
 }

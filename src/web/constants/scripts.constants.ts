@@ -42,10 +42,39 @@ document.addEventListener('submit', event => {
 		dialog.showModal()
 		return
 	}
+	if (form.method !== 'post') return
 	for (const button of form.querySelectorAll('button[type=submit]')) {
 		button.disabled = true
 		button.dataset.label = button.textContent
 		button.textContent = 'Corriendo…'
 	}
 })
+`
+
+export const SEARCH_SCRIPT = `
+document.addEventListener('input', event => {
+	const input = event.target
+	if (!(input instanceof HTMLInputElement) || input.type !== 'search' || input.value !== '' || !input.form) return
+	if (new URLSearchParams(location.search).get(input.name)) input.form.requestSubmit()
+})
+`
+
+export const SETTINGS_SCRIPT = `
+const settingsForm = document.querySelector('form[data-dirty]')
+if (settingsForm instanceof HTMLFormElement) {
+	const snapshot = () => new URLSearchParams(new FormData(settingsForm)).toString()
+	const initial = snapshot()
+	const save = settingsForm.querySelector('[data-save]')
+	const discard = settingsForm.querySelector('[data-discard]')
+	const note = settingsForm.querySelector('[data-dirty-note]')
+	const sync = () => {
+		const dirty = settingsForm.dataset.dirty === 'true' || snapshot() !== initial
+		save.disabled = !dirty
+		dirty ? discard.removeAttribute('aria-disabled') : discard.setAttribute('aria-disabled', 'true')
+		note.hidden = !dirty
+	}
+	settingsForm.addEventListener('input', sync)
+	settingsForm.addEventListener('change', sync)
+	sync()
+}
 `

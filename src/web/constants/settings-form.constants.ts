@@ -25,8 +25,10 @@ export const WINDOW_HINT = 'Solo cuotas desde el mes actual menos N meses.'
 
 export const RECENT_HINT = 'De 1 a 60. Vacío = todas. Se conservan las más recientes.'
 
-export const GRACE_HINT = 'De 0 a 60. El corte es el vencimiento más estos días.'
+export const GRACE_HINT = 'De 0 a 60. El corte es el vencimiento más estos días. Las facturas ya importadas conservan su corte.'
 
 export const CAPS_HINT = 'Lo que exceda queda frenado y no se importa. Vacío = sin tope.'
 
 export const AUTO_RUN_HINT = 'Importa y después actualiza pagadas, una vez por día, en hora de Caracas.'
+
+export const UNSAVED_CHANGES = 'Tienes cambios sin guardar.'

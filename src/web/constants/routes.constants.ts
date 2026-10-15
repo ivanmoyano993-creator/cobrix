@@ -38,9 +38,17 @@ export const FLASH_TEXT_PARAM = 'msg'
 
 export const FLASH_TONE_PARAM = 'tone'
 
+export const PAGE_PARAM = 'pagina'
+
+export const FIRST_PAGE = 1
+
 export const SUMMARY_RUNS_LIMIT = 5
 
-export const HISTORY_RUNS_LIMIT = 50
+export const RUNS_PAGE_SIZE = 10
+
+export const CUSTOMERS_PAGE_SIZE = 10
+
+export const RUN_ITEMS_PAGE_SIZE = 25
 
 export const MAX_FORM_BYTES = 64 * 1024
 
