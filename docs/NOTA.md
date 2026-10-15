@@ -50,6 +50,7 @@ Cómo levantarlo y probarlo: [`README.md`](../README.md).
 
 - **Autenticación del panel.** Cualquiera con acceso a la URL lo opera.
 - **Cuotas que desaparecen del ISP** (deuda anulada del lado del ISP): la factura queda abierta como «sin evidencia», no se cancela sola.
+- **Cobros anulados después de marcar pagada.** Si el ISP anula un cobro cuando la factura ya figura pagada en Cobrix, la factura no se reabre: el §3.3 revisa solo las abiertas. Anular antes de actualizar sí funciona (caso de ELENA RUIZ en el §5).
 - **Reintentos con espera** ante errores transitorios, y concurrencia acotada al consultar contratos (hoy es uno por vez, a propósito).
 - **Rotación de la clave de cifrado.** El formato `v1:` lo deja preparado.
 - **Pruebas de navegador** (Playwright). Las del panel van por HTTP contra la API real, y la revisión visual la hice con capturas en Edge headless a 1440 px y 375 px.
@@ -59,6 +60,7 @@ Cómo levantarlo y probarlo: [`README.md`](../README.md).
 - Login y roles para el panel, y auditoría de cambios de configuración.
 - Alertas cuando falla la corrida automática (correo de cobranza).
 - Conciliación de cuotas que dejan de existir en el ISP.
+- Volver a verificar las pagadas recientes y reabrir las que el ISP anuló, con un evento en el historial.
 - Reintentos con espera y concurrencia acotada, con métricas por corrida.
 - Exportar a CSV la tabla de clientes y el detalle de cada corrida.
 
