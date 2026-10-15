@@ -25,12 +25,13 @@ const simulatedLatencyMs = Number(process.env.COBRIX_SIMULATED_LATENCY_MS ?? 120
 const appPort = Number(process.env.PORT ?? 4300)
 const billingApiPort = Number(process.env.BILLING_API_PORT ?? 4310)
 const host = process.env.HOST ?? '127.0.0.1'
+const urlHost = host === '0.0.0.0' || host === '::' ? '127.0.0.1' : host
 
 if (!existsSync(billingApiDb)) seedBillingApi(billingApiDb)
 
 const billingApi = createBillingApiServer(billingApiDb)
 await billingApi.listen(billingApiPort, host)
-const simulatorUrl = `http://${host}:${billingApiPort}`
+const simulatorUrl = `http://${urlHost}:${billingApiPort}`
 
 const cobrix = createCobrix({
 	dataDir: cobrixDataDir,
@@ -43,7 +44,7 @@ cobrix.startScheduler()
 const app = createApp({ cobrix, simulatorUrl, assignmentPath: resolve(root, 'docs/ENUNCIADO.md') })
 app.listen(appPort, host)
 
-console.log(`Panel de Cobrix:          http://${host}:${appPort}`)
+console.log(`Panel de Cobrix:          http://${urlHost}:${appPort}`)
 console.log(`API del administrador:    ${simulatorUrl}/api/v1`)
 console.log(`Swagger:                  ${simulatorUrl}/docs`)
 console.log(`Fecha de la prueba:       ${process.env.SANDBOX_TODAY}`)
