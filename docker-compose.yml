@@ -1,0 +1,16 @@
+services:
+  cobrix:
+    build: .
+    image: cobrix
+    ports:
+      - "4300:4300"
+      - "4310:4310"
+    environment:
+      COBRIX_SECRET_KEY: ${COBRIX_SECRET_KEY:-}
+      COBRIX_SIMULATED_LATENCY_MS: ${COBRIX_SIMULATED_LATENCY_MS:-120}
+    volumes:
+      - cobrix-data:/data
+    restart: unless-stopped
+
+volumes:
+  cobrix-data:
