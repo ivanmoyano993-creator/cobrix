@@ -26,6 +26,8 @@ Cómo levantarlo y probarlo: [`README.md`](../README.md).
 
 **Corrida automática:** «ya pasó la hora y todavía no corrió hoy», así se recupera si el servidor estaba apagado. «Hoy» es el día real de Caracas (`calendarDay`), no el `SANDBOX_TODAY`: con la fecha fijada correría una sola vez para siempre. La última corrida se guarda con el mismo reloj con el que se compara.
 
+**Docker y CI/CD, lo justo.** Imagen `node:24-alpine` de una sola etapa: sin build ni dependencias de producción, multi-stage no deja nada afuera. Corre sin root, guarda todo en un volumen y tiene healthcheck. CI corre tipos y pruebas en Ubuntu y Windows (lo desarrollé en Windows) y prueba la imagen levantada. CD publica en GHCR solo si CI pasa en `main` y simula el deploy a `staging`: sin Kubernetes, Terraform ni nube, que para un proceso con SQLite serían ceremonia.
+
 **Precarga del proveedor.** `npm start` completa el proveedor con el sandbox solo si nunca se configuró, para que se pueda importar de una. En producción arrancaría vacío.
 
 ### Lo que el enunciado dejaba abierto
@@ -79,6 +81,7 @@ Trabajé con **Claude Code** en VS Code, por fases, cada una en su rama con pull
 - Puso el puerto del proveedor dentro del adaptador HTTP, al revés de la hexagonal.
 - Guardaba la contraseña del proveedor en texto plano.
 - Concentró toda la persistencia en una interfaz de 16 métodos; la separamos en repositorios.
+- Su arreglo de la corrida automática estaba mal y las pruebas pasaban igual: marcaba y comparaba con la fecha fija del sandbox, así que habría corrido una sola vez para siempre. Lo encontró una revisión externa del código; lo corregimos con el día real de Caracas.
 
 **Dónde la IA frenó una idea mía con evidencia:** le pedí usar `enum` (compiló y mostró el error `TS1294` de `erasableSyntaxOnly`); propuse un ORM y luego Astro (me mostró el costo concreto en este proyecto: decorators, generación de código, un segundo servidor, build). En los dos casos decidí no usarlos.
 
@@ -87,4 +90,6 @@ Trabajé con **Claude Code** en VS Code, por fases, cada una en su rama con pull
 - La prueba de aceptación del §5 pasó al primer intento contra la API real.
 - Revisando capturas del panel aparecieron problemas que ninguna prueba veía: contadores en singular, una columna que se cortaba en el celular, dos números distintos para «siguen abiertas», «esta corrida no dejó filas» mientras todavía corría, y estilos de formulario que se habían perdido en una reescritura.
 - Un script de reemplazo rompió el escapado de una expresión regular (`/\s/` quedó como `/s/`). Lo detectó la prueba del correo de cobranza.
+- Una prueba que escribió dependía del día en que se corría (una aserción dentro de un `if`). La marcó la fase de verificación; ahora usa un reloj inyectado.
+- Haciendo QA contra el enunciado, el Resumen mostraba 21 contratos y la referencia dice 27. Ninguno estaba mal: 27 son los del administrador y 21 los que gestiona Cobrix. Ahora se ven los dos.
 - La prueba que vino con el esqueleto fallaba en Windows (`URL.pathname` en lugar de `fileURLToPath`); quedó corregida en su propio PR.
