@@ -30,22 +30,6 @@ Cómo levantarlo y probarlo: [`README.md`](../README.md).
 
 **Precarga del proveedor.** `npm start` completa el proveedor con el sandbox solo si nunca se configuró, para que se pueda importar de una. En producción arrancaría vacío.
 
-### Lo que el enunciado dejaba abierto
-
-- **Identificación:** los 6 a 12 dígitos se cuentan después de quitar los ceros a la izquierda.
-- **Dos cuotas del mismo periodo** en un contrato se tratan como respuesta contradictoria.
-- **Abono parcial:** no cambia el saldo en Cobrix. Lo exigen los números del §5 (1.235 − 280 = 955); si el abono bajara el saldo, darían 950.
-- **Saldo del ISP mayor que el de Cobrix:** respuesta inconsistente, la factura sigue abierta.
-- **Exonerada** (saldo 0 sin nada pagado): no es un pago y la factura sigue abierta con ese motivo.
-- **Factura que pagó la cuota:** la más reciente del libro con `id_factura` distinto de 0.
-- **Rango del libro de cuotas:** desde el vencimiento más viejo abierto del contrato hasta el fin del mes en curso.
-- **Cuota del mes en curso:** si no figura en el libro, se consulta el contrato. Solo en ese caso, para no hacer pedidos de más.
-- **Error HTTP o JSON inesperado en un contrato:** ese contrato queda fuera y la corrida sigue. Credenciales malas o la API caída hacen fallar la corrida.
-- **Topes por corrida:** desde la primera factura que excede un tope, esa y las siguientes quedan frenadas, en orden de contrato y periodo. Lo ya importado no cuenta para el tope.
-- **Cliente:** se crea solo si se le importa al menos una factura.
-- **Probar conexión:** usa lo escrito en el formulario sin guardarlo.
-- **Contratos en el Resumen:** muestro los dos números, «Contratos importados: 21 · de 27 en el administrador». Los 21 son los que gestiona Cobrix (los de clientes importados); los 27 salen del contador de la última importación. Los 6 que quedan fuera no se guardan porque sus titulares no pueden ser clientes (§5); su motivo está en el detalle de cada importación.
-
 ## Lo que dejé fuera
 
 - **Autenticación del panel.** Cualquiera con acceso a la URL lo opera.
