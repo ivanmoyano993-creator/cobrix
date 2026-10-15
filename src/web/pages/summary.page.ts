@@ -23,7 +23,7 @@ export function summaryPage(deps: AppDeps, settings: Settings): Page {
 			${runningBanner(deps.cobrix.progress.current())}
 			${tiles([
 				{ label: 'Clientes importados', value: String(overview.customers) },
-				{ label: 'Contratos', value: String(overview.contracts) },
+				{ label: 'Contratos importados', value: String(overview.contracts) },
 				{ label: 'Facturas abiertas', value: String(overview.openInvoices) },
 				{ label: 'Facturas pagadas', value: String(overview.paidInvoices) },
 				{ label: 'Por cobrar', value: usd(overview.receivableCents) },

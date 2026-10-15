@@ -64,7 +64,7 @@ curl -X POST http://127.0.0.1:4310/__sim/pagar -H 'content-type: application/jso
 ## Pruebas
 
 ```bash
-npm test           # 168 pruebas
+npm test           # todas las pruebas
 npm run typecheck
 ```
 
