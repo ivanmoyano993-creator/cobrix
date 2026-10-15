@@ -30,7 +30,7 @@ npm start
 docker compose up --build
 ```
 
-Mismas URLs que arriba. La imagen (`node:24-alpine`, usuario sin privilegios, healthcheck sobre el panel) guarda todo en el volumen `cobrix-data`: la base del ISP se genera la primera vez y la de Cobrix y su clave viven en `/data/cobrix`. `docker compose down -v` empieza de cero. Dentro del contenedor escucha en `0.0.0.0`, así que los enlaces que imprime el log dicen `0.0.0.0`: abre `127.0.0.1`.
+Mismas URLs que arriba. La imagen (`node:24-alpine`, usuario sin privilegios, healthcheck sobre el panel) guarda todo en el volumen `cobrix-data`: la base del ISP se genera la primera vez y la de Cobrix y su clave viven en `/data/cobrix`. `docker compose down -v` empieza de cero.
 
 ### CI/CD
 
