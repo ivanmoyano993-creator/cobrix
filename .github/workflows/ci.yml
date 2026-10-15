@@ -7,7 +7,11 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -17,3 +21,21 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t cobrix:ci .
+      - name: Smoke test
+        run: |
+          docker run -d --name cobrix -p 4300:4300 -p 4310:4310 cobrix:ci
+          for i in $(seq 1 30); do
+            [ "$(docker inspect -f '{{.State.Health.Status}}' cobrix)" = healthy ] && break
+            sleep 2
+          done
+          docker inspect -f '{{.State.Health.Status}}' cobrix | grep -qx healthy
+          curl -fsS http://127.0.0.1:4300/ | grep -q 'Resumen'
+          curl -fsS http://127.0.0.1:4310/docs > /dev/null
+      - if: failure()
+        run: docker logs cobrix

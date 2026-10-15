@@ -24,6 +24,19 @@ npm start
 
 `npm start` fija la fecha de la prueba en **2026-10-13** y precarga el proveedor con las credenciales del sandbox (`cobrix` / `cobrix-sandbox`) solo la primera vez, así que se puede importar sin configurar nada. Una configuración guardada nunca se pisa.
 
+### Con Docker
+
+```bash
+docker compose up --build
+```
+
+Mismas URLs que arriba. La imagen (`node:24-alpine`, usuario sin privilegios, healthcheck sobre el panel) guarda todo en el volumen `cobrix-data`: la base del ISP se genera la primera vez y la de Cobrix y su clave viven en `/data/cobrix`. `docker compose down -v` empieza de cero. Dentro del contenedor escucha en `0.0.0.0`, así que los enlaces que imprime el log dicen `0.0.0.0`: abre `127.0.0.1`.
+
+### CI/CD
+
+- **CI** ([`ci.yml`](.github/workflows/ci.yml)), en cada PR y en `main`: tipos y pruebas con Node 24 en Ubuntu y Windows, y build de la imagen con una prueba de humo (espera el healthcheck y pide el panel y el Swagger).
+- **CD** ([`cd.yml`](.github/workflows/cd.yml)), cuando CI pasa en `main`: publica la imagen en GHCR (`latest` y el SHA) y corre un deploy **simulado** al entorno `staging` de GitHub. No hay servidor real; el paso indica qué haría.
+
 ### Variables de entorno
 
 Todas son opcionales. Para cambiar alguna, copia [`.env.example`](.env.example) a `.env` (ignorado por git) y descomenta lo que necesites: `npm start` lo carga con `--env-file-if-exists`, sin dependencias.
