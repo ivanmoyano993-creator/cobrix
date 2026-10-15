@@ -18,7 +18,7 @@ import type { SqlRow } from '../../types/sqlite.types.ts'
 import { listHistory } from '../repositories/sqlite-history.repository.ts'
 import { toInvoice } from '../repositories/sqlite-invoice.repository.ts'
 import { toRunSummary } from '../repositories/sqlite-run.repository.ts'
-import { integer, nullableOneOf, nullableText, oneOf, text } from '../rows.ts'
+import { integer, nullableInteger, nullableOneOf, nullableText, oneOf, text } from '../rows.ts'
 
 export function createSqlitePanelQueries(db: DatabaseSync): PanelQueries {
 	return {
@@ -38,6 +38,7 @@ function overview(db: DatabaseSync): Overview {
 		openInvoices: integer(row, 'open_invoices'),
 		paidInvoices: integer(row, 'paid_invoices'),
 		receivableCents: integer(row, 'receivable_cents'),
+		providerContracts: nullableInteger(row, 'provider_contracts'),
 	}
 }
 

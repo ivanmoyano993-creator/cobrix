@@ -10,6 +10,7 @@ export interface Overview {
 	readonly openInvoices: number
 	readonly paidInvoices: number
 	readonly receivableCents: number
+	readonly providerContracts: number | null
 }
 
 export interface CustomerRow {

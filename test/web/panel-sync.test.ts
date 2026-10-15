@@ -64,6 +64,7 @@ describe('panel: Resumen, Sincronización y detalle de corrida', () => {
 		const summary = await panel.get('/')
 		assert.match(summary.body, /USD 1\.235,00/)
 		assert.match(summary.body, /42 facturas importadas/)
+		assert.match(summary.body, /<span>Contratos importados<\/span><strong>21<\/strong><small>de 27 en el administrador<\/small>/)
 	})
 
 	it('el detalle filtra las filas por resultado', async () => {

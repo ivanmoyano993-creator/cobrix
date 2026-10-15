@@ -42,6 +42,7 @@ Cómo levantarlo y probarlo: [`README.md`](../README.md).
 - **Topes por corrida:** desde la primera factura que excede un tope, esa y las siguientes quedan frenadas, en orden de contrato y periodo. Lo ya importado no cuenta para el tope.
 - **Cliente:** se crea solo si se le importa al menos una factura.
 - **Probar conexión:** usa lo escrito en el formulario sin guardarlo.
+- **Contratos en el Resumen:** muestro los dos números, «Contratos importados: 21 · de 27 en el administrador». Los 21 son los que gestiona Cobrix (los de clientes importados); los 27 salen del contador de la última importación. Los 6 que quedan fuera no se guardan porque sus titulares no pueden ser clientes (§5); su motivo está en el detalle de cada importación.
 
 ## Lo que dejé fuera
 

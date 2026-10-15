@@ -51,7 +51,20 @@ describe('createSqlitePanelQueries', () => {
 	})
 
 	it('resume los totales de la integración', () => {
-		assert.deepEqual(context.persistence.queries.overview(), { customers: 3, contracts: 4, openInvoices: 3, paidInvoices: 1, receivableCents: 2500 + 2500 + 6000 })
+		assert.deepEqual(context.persistence.queries.overview(), { customers: 3, contracts: 4, openInvoices: 3, paidInvoices: 1, receivableCents: 2500 + 2500 + 6000, providerContracts: null })
+	})
+
+	it('toma los contratos del administrador de la última importación completada, aunque haya sido simulada', () => {
+		const { runs, queries } = context.persistence
+		const older = runs.start({ kind: RUN_KIND.Import, dryRun: false, trigger: RUN_TRIGGER.Manual, startedAt: AT })
+		runs.finish(older, { status: RUN_STATUS.Completed, finishedAt: AT, summary: '', counters: { contracts_total: 25 }, error: null })
+		const latest = runs.start({ kind: RUN_KIND.Import, dryRun: true, trigger: RUN_TRIGGER.Manual, startedAt: AT })
+		runs.finish(latest, { status: RUN_STATUS.Completed, finishedAt: AT, summary: '', counters: { contracts_total: 27 }, error: null })
+		const failed = runs.start({ kind: RUN_KIND.Import, dryRun: false, trigger: RUN_TRIGGER.Manual, startedAt: AT })
+		runs.finish(failed, { status: RUN_STATUS.Failed, finishedAt: AT, summary: '', counters: {}, error: 'Contraseña Incorrecta' })
+		const paid = runs.start({ kind: RUN_KIND.UpdatePaid, dryRun: false, trigger: RUN_TRIGGER.Manual, startedAt: AT })
+		runs.finish(paid, { status: RUN_STATUS.Completed, finishedAt: AT, summary: '', counters: { invoices_checked: 3 }, error: null })
+		assert.equal(queries.overview().providerContracts, 27)
 	})
 
 	it('lista los clientes con contratos, facturas, deuda y vencimiento más antiguo, de mayor a menor deuda', () => {
